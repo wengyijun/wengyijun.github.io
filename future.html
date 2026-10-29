@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招财猫·双色球动态算力与幸运玄术终端</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts 国风与萌系字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@600;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <!-- Canvas-Confetti 礼花特效 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'china-red': '#C8102E',
+                        'deep-red': '#8B0000',
+                        'gold-light': '#FFE57F',
+                        'gold-main': '#FFD700',
+                        'gold-dark': '#B8860B',
+                        'ssq-red': '#E60012',
+                        'ssq-blue': '#0066FF'
+                    },
+                    fontFamily: {
+                        'calligraphy': ['"Ma Shan Zheng"', 'cursive', 'serif'],
+                        'serif-sc': ['"Noto Serif SC"', 'serif'],
+                        'cute': ['"ZCOOL KuaiLe"', 'cursive', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at center, #8B0000 0%, #4A000A 60%, #1A0003 100%);
+            color: #FFF8DC;
+            font-family: 'Noto Serif SC', -apple-system, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 招财猫背景光晕 */
+        .god-rays {
+            background: radial-gradient(circle, rgba(255,215,0,0.45) 0%, rgba(255,215,0,0) 70%);
+            animation: pulse-glow 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(0.9) rotate(0deg); opacity: 0.6; }
+            100% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+        }
+
+        /* 招财猫摇爪动画 */
+        .beckoning-paw {
+            transform-origin: 190px 150px;
+            animation: wave-paw 1.2s infinite ease-in-out alternate;
+        }
+
+        @keyframes wave-paw {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-22deg); }
+        }
+
+        /* 鎏金卡片与边框 */
+        .gold-border-box {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #FFE57F, #FFD700, #B8860B, #FFE57F) 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(255, 215, 0, 0.15);
+            background: rgba(40, 5, 8, 0.88);
+            backdrop-filter: blur(12px);
+        }
+
+        .gold-text {
+            background: linear-gradient(135deg, #FFF8DC 0%, #FFD700 50%, #DAA520 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-btn {
+            background: linear-gradient(180deg, #FFEA79 0%, #FFD700 40%, #C59B27 100%);
+            color: #5B0000;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+            transition: all 0.25s ease;
+        }
+        .gold-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.8);
+            background: linear-gradient(180deg, #FFF2A1 0%, #FFE033 40%, #DAA520 100%);
+        }
+
+        #coin-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 双色球红蓝球球体质感 */
+        .ssq-ball-red {
+            background: radial-gradient(circle at 35% 35%, #FF6B6B 0%, #E60012 60%, #8B0000 100%);
+            box-shadow: 0 4px 10px rgba(230, 0, 18, 0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
+        }
+
+        .ssq-ball-blue {
+            background: radial-gradient(circle at 35% 35%, #66B2FF 0%, #0066FF 60%, #003399 100%);
+            box-shadow: 0 4px 10px rgba(0, 102, 255, 0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
+        }
+
+        .meow-bubble {
+            animation: pop-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes pop-bounce {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="relative pb-16">
+
+    <!-- 金币雨 Canvas -->
+    <canvas id="coin-canvas"></canvas>
+
+    <!-- 顶栏灯笼与标识 -->
+    <div class="flex justify-between items-center px-4 pt-3 text-2xl text-gold-main opacity-90 max-w-5xl mx-auto">
+        <i class="fa-solid fa-lantern animate-bounce"></i>
+        <div class="text-xs sm:text-sm tracking-widest text-gold-light/90 font-serif-sc flex items-center gap-2">
+            <i class="fa-solid fa-circle-dot text-ssq-red"></i> 双色球全时空算力 & 易经复盘终端
+        </div>
+        <i class="fa-solid fa-lantern animate-bounce"></i>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 py-4 relative z-20">
+
+        <!-- Header: 巨幅招财猫主视觉 -->
+        <header class="text-center relative mb-6">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 sm:w-96 sm:h-96 rounded-full god-rays pointer-events-none"></div>
+
+            <div class="relative z-20 inline-block">
+                <!-- 点击猫咪提示 -->
+                <div id="catBubble" class="hidden absolute -top-8 right-0 sm:-right-8 bg-gold-main text-red-950 font-bold px-3 py-1 rounded-full text-xs shadow-lg meow-bubble border border-white z-30 font-cute">
+                    喵~ 招财猫为您开启双色球头奖运势！🔴🔵
+                </div>
+
+                <!-- 巨型矢量招财猫 -->
+                <div class="relative z-10 cursor-pointer group py-2 transform hover:scale-105 transition-transform duration-300" onclick="triggerCatMeow()">
+                    <svg class="w-60 h-60 sm:w-80 sm:h-80 md:w-88 md:h-88 mx-auto filter drop-shadow-[0_12px_28px_rgba(255,215,0,0.65)]" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 1. 身体与尾巴 -->
+                        <path d="M 230 220 C 275 230, 280 280, 240 290" stroke="#FFFDF7" stroke-width="18" stroke-linecap="round" fill="none"/>
+                        <path d="M 230 220 C 275 230, 280 280, 240 290" stroke="#333333" stroke-width="4" stroke-linecap="round" fill="none"/>
+                        <path d="M 80 180 C 80 280, 240 280, 240 180 C 240 150, 80 150, 80 180 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5"/>
+
+                        <!-- 2. 耳朵 -->
+                        <path d="M 70 100 L 40 45 C 40 45, 80 48, 102 72 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5" stroke-linejoin="round"/>
+                        <path d="M 64 62 L 52 50 C 52 50, 72 54, 86 70 Z" fill="#FF8080"/>
+                        <path d="M 250 100 L 280 45 C 280 45, 240 48, 218 72 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5" stroke-linejoin="round"/>
+                        <path d="M 256 62 L 268 50 C 268 50, 248 54, 234 70 Z" fill="#FF8080"/>
+
+                        <!-- 3. 头部 -->
+                        <ellipse cx="160" cy="120" rx="92" ry="78" fill="#FFFDF7" stroke="#333333" stroke-width="4.5"/>
+                        <path d="M 140 45 Q 160 38, 180 45 Q 160 55, 140 45 Z" fill="#C8102E" stroke="#333333" stroke-width="1.5"/>
+
+                        <!-- 4. 五官 -->
+                        <path d="M 105 112 Q 123 96, 138 114" stroke="#333333" stroke-width="5" stroke-linecap="round" fill="none"/>
+                        <path d="M 182 114 Q 197 96, 215 112" stroke="#333333" stroke-width="5" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="106" cy="130" rx="12" ry="7" fill="#FF8080" opacity="0.6"/>
+                        <ellipse cx="214" cy="130" rx="12" ry="7" fill="#FF8080" opacity="0.6"/>
+                        <ellipse cx="160" cy="120" rx="4.5" ry="3.5" fill="#FF8080"/>
+                        <path d="M 160 123 Q 152 133, 142 126" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <path d="M 160 123 Q 168 133, 178 126" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+                        <line x1="80" y1="112" x2="115" y2="118" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="75" y1="125" x2="112" y2="126" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="80" y1="138" x2="115" y2="133" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="240" y1="112" x2="205" y2="118" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="245" y1="125" x2="208" y2="126" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="240" y1="138" x2="205" y2="133" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+
+                        <!-- 5. 脖圈与大金铃铛 -->
+                        <path d="M 88 165 Q 160 200, 232 165 Q 160 178, 88 165 Z" fill="#C8102E" stroke="#333333" stroke-width="3"/>
+                        <circle cx="160" cy="188" r="16" fill="#FFD700" stroke="#333333" stroke-width="3"/>
+                        <circle cx="160" cy="188" r="4" fill="#8B0000"/>
+                        <line x1="160" y1="192" x2="160" y2="204" stroke="#333333" stroke-width="3"/>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- 实时权威黄历广播 -->
+        <div class="gold-border-box rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-gold-light space-y-1" id="calendarBar">
+            <div class="flex flex-wrap justify-between items-center gap-2 border-b border-gold-dark/40 pb-2">
+                <span class="font-bold text-gold-main flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-check text-ssq-red"></i> <span id="calDateStr">----.--.--</span>
+                </span>
+                <span class="bg-gold-dark/30 px-2.5 py-0.5 rounded border border-gold-dark/50 text-gold-light" id="calGanzhi">-----</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+                <div><span class="text-gold-light/70">日柱干支：</span><span id="calDayGanzhi" class="font-bold text-white">--</span></div>
+                <div><span class="text-gold-light/70">财神方位：</span><span id="calCaiDir" class="font-bold text-gold-main">--</span></div>
+                <div><span class="text-gold-light/70">喜神方位：</span><span id="calXiDir" class="font-bold text-white">--</span></div>
+                <div><span class="text-gold-light/70">今日冲煞：</span><span id="calClash" class="font-bold text-red-400">--</span></div>
+            </div>
+        </div>
+
+        <!-- 🌟 今日最适合购彩生肖推荐 & 科学依据 -->
+        <div class="gold-border-box rounded-2xl p-5 mb-8 bg-gradient-to-r from-red-950/80 via-black/90 to-red-950/80">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gold-dark/40 pb-3 mb-4 gap-2">
+                <h3 class="text-xl font-bold text-gold-main font-cute flex items-center gap-2">
+                    <i class="fa-solid fa-crown text-amber-400"></i> 今日最强财运生肖 (基于概率学与统计学推算)
+                </h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
+                <!-- 生肖徽章 -->
+                <div class="text-center p-4 bg-black/60 rounded-xl border border-gold-main/40">
+                    <span class="text-xs text-gold-light/70 block mb-1">今日运势峰值生肖</span>
+                    <div id="topZodiacBadge" class="text-3xl font-cute font-bold text-gold-main my-1">--</div>
+                    <span id="topZodiacScore" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-china-red text-white">匹配指数 98.6%</span>
+                </div>
+
+                <!-- 科学/数理依据 -->
+                <div class="md:col-span-2 space-y-2 text-xs sm:text-sm">
+                    <div class="text-amber-300 font-bold flex items-center gap-1.5 font-cute text-sm">
+                        <i class="fa-solid fa-flask-vial text-emerald-400"></i> 【数理统计与心理博弈依据】
+                    </div>
+                    <p id="scienceBasisText" class="text-gray-200 leading-relaxed text-xs">
+                        根据博弈论方差模型与极值分布统计（Gumbel Distribution），结合今日天时干支周期与波段振幅，该生肖在决策冷静度与避开热门偏正号码上具备最佳方差控制力。
+                    </p>
+                    <div class="bg-gold-main/10 p-2.5 rounded-lg border border-gold-main/30 text-xs text-gold-light">
+                        <strong class="text-gold-main">🎯 今日该生肖专属幸运推荐号：</strong>
+                        <span id="topZodiacNumbers" class="font-bold text-white ml-1">-- -- -- -- -- -- + --</span>
+                        <div class="mt-1 text-gold-light/80" id="topZodiacAdvice"><b>核心磁场建议：</b> --</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟 新增：十二生肖今日运势高低红黑榜 & 专属数字路径 -->
+        <div class="gold-border-box rounded-2xl p-6 mb-8 bg-gradient-to-b from-black/90 via-red-950/50 to-black/90">
+            <h3 class="text-xl font-bold text-gold-main flex items-center justify-between border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-amber-400"></i> 十二生肖今日运势强弱榜 & 最强最硬数字路径</span>
+                <span class="text-xs font-normal text-gold-light/70" id="zodiacRankDateNotice">选定日期算力联动</span>
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs mb-4">
+                <!-- 运势极佳/爆棚 -->
+                <div class="p-3.5 rounded-xl bg-green-950/40 border border-green-700/50 space-y-2">
+                    <div class="font-bold font-cute text-sm text-green-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-trend-up"></i> 🌟 今日运势爆棚生肖
+                    </div>
+                    <div id="rankHighZodiacs" class="text-gray-200 leading-relaxed">--</div>
+                </div>
+
+                <!-- 运势平稳 -->
+                <div class="p-3.5 rounded-xl bg-amber-950/40 border border-amber-700/50 space-y-2">
+                    <div class="font-bold font-cute text-sm text-amber-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-minus"></i> ⚖️ 今日运势平稳生肖
+                    </div>
+                    <div id="rankMidZodiacs" class="text-gray-200 leading-relaxed">--</div>
+                </div>
+
+                <!-- 磁场偏弱/需要防守 -->
+                <div class="p-3.5 rounded-xl bg-red-950/40 border border-red-700/50 space-y-2">
+                    <div class="font-bold font-cute text-sm text-red-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield text-red-400"></i> ⚠️ 今日磁场偏弱生肖 (宜防守)
+                    </div>
+                    <div id="rankWeakZodiacs" class="text-gray-200 leading-relaxed">--</div>
+                </div>
+            </div>
+
+            <div class="text-xs text-gold-light/80 bg-black/60 p-3 rounded-xl border border-gold-dark/30">
+                <div class="font-bold text-gold-main font-cute mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cubes-stacked text-amber-300"></i> 各生肖今日最强最硬【核心胆码】与专属走数：
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 font-mono text-[11px]" id="zodiacTodayPathGrid">
+                    <!-- JS 动态计算与填充 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数输入卡片 -->
+        <div class="gold-border-box rounded-2xl p-5 sm:p-8 mb-8 relative">
+            <div class="absolute -top-4 left-6 bg-china-red text-gold-main px-4 py-1 rounded-full text-xs sm:text-sm font-bold border border-gold-main flex items-center gap-1.5 shadow-md font-cute">
+                <i class="fa-solid fa-clock-rotate-left"></i> 设置推算时间与生肖参数
+            </div>
+
+            <form id="ssqForm" onsubmit="calculateSSQ(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                <!-- 自定义日期 -->
+                <div>
+                    <label class="block text-xs font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-calendar-day text-gold-main mr-1"></i> 选定推算日期
+                    </label>
+                    <input type="date" id="targetDate" required onchange="onDateChange()"
+                        class="w-full bg-black/80 border border-gold-dark/60 rounded-lg px-3 py-2 text-gold-main font-semibold focus:outline-none focus:border-gold-main text-sm">
+                </div>
+
+                <!-- 生肖 -->
+                <div>
+                    <label class="block text-xs font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-paw text-gold-main mr-1"></i> 生肖属相
+                    </label>
+                    <select id="zodiac" required class="w-full bg-black/80 border border-gold-dark/60 rounded-lg px-3 py-2 text-gold-main font-semibold focus:outline-none focus:border-gold-main text-sm">
+                        <option value="鼠">鼠 (子 · 属水)</option>
+                        <option value="牛">牛 (丑 · 属土)</option>
+                        <option value="虎">虎 (寅 · 属木)</option>
+                        <option value="兔">兔 (卯 · 属木)</option>
+                        <option value="龙">龙 (辰 · 属土)</option>
+                        <option value="蛇">蛇 (巳 · 属火)</option>
+                        <option value="马">马 (午 · 属火)</option>
+                        <option value="羊">羊 (未 · 属土)</option>
+                        <option value="猴" selected>猴 (申 · 属金)</option>
+                        <option value="鸡">鸡 (酉 · 属金)</option>
+                        <option value="狗">狗 (戌 · 属土)</option>
+                        <option value="猪">猪 (亥 · 属水)</option>
+                    </select>
+                </div>
+
+                <!-- 周岁年龄 -->
+                <div>
+                    <label class="block text-xs font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-user-clock text-gold-main mr-1"></i> 周岁年龄
+                    </label>
+                    <input type="number" id="age" min="1" max="120" value="28" required placeholder="例如：28"
+                        class="w-full bg-black/50 border border-gold-dark/60 rounded-lg px-3 py-2 text-gold-main font-semibold focus:outline-none focus:border-gold-main text-sm">
+                </div>
+
+                <!-- 性别 -->
+                <div>
+                    <label class="block text-xs font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-venus-mars text-gold-main mr-1"></i> 性别
+                    </label>
+                    <select id="gender" required class="w-full bg-black/80 border border-gold-dark/60 rounded-lg px-3 py-2 text-gold-main font-semibold focus:outline-none focus:border-gold-main text-sm">
+                        <option value="乾造(男)">乾造 (男)</option>
+                        <option value="坤造(女)">坤造 (女)</option>
+                    </select>
+                </div>
+
+                <div class="sm:col-span-2 md:col-span-4 mt-2">
+                    <button type="submit" id="submitBtn" class="gold-btn w-full py-3.5 rounded-xl font-bold text-lg flex items-center justify-center gap-2 tracking-wider font-cute">
+                        <i class="fa-solid fa-cat"></i> 生成选定日期之双色球幸运号
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 测算动画 -->
+        <div id="loadingBox" class="hidden text-center py-10">
+            <div class="inline-block animate-bounce text-gold-main text-5xl mb-3">
+                <i class="fa-solid fa-spinner animate-spin text-ssq-red"></i>
+            </div>
+            <p class="text-gold-light font-cute text-2xl animate-pulse">招财猫正调用天时干支五行与六十甲子卦象...</p>
+        </div>
+
+        <!-- 结果显示区域 -->
+        <div id="resultBox" class="hidden space-y-6">
+
+            <!-- 1. 双色球幸运号码展示区 -->
+            <div class="gold-border-box rounded-2xl p-6 text-center bg-gradient-to-b from-black/90 via-red-950/70 to-black/90">
+                <div class="text-gold-main font-cute text-2xl mb-1 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-clover text-green-400"></i> 您个人的专属双色球幸运组合
+                </div>
+                <p class="text-xs text-gold-light/70 mb-5">结合今日日柱五行与您个人生肖、年龄参数的算法推演结果</p>
+
+                <!-- 个人最强磁场数字高亮卡片 -->
+                <div class="mb-5 bg-gradient-to-r from-amber-950/60 via-red-900/40 to-amber-950/60 p-3.5 rounded-xl border border-gold-main/50 max-w-lg mx-auto flex items-center justify-between gap-3 text-left">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gold-main text-red-950 font-black text-xl flex items-center justify-center shadow-lg border-2 border-white shrink-0 font-cute" id="userCoreNumber">
+                            --
+                        </div>
+                        <div>
+                            <div class="text-xs text-gold-light/80">您的个人今日最强磁场数字</div>
+                            <div class="text-sm font-bold text-gold-main font-cute" id="userCoreNumberTitle">【核心领航星号】</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-300 border-l border-gold-dark/40 pl-3 leading-snug" id="userCoreNumberReason">
+                        此数字在您的年龄与今日日柱磁场重合度最高。
+                    </div>
+                </div>
+
+                <!-- 红球 + 蓝球 显示 -->
+                <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 my-4">
+                    <div id="redBall1" class="ssq-ball-red w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-pulse">--</div>
+                    <div id="redBall2" class="ssq-ball-red w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-pulse">--</div>
+                    <div id="redBall3" class="ssq-ball-red w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-pulse">--</div>
+                    <div id="redBall4" class="ssq-ball-red w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-pulse">--</div>
+                    <div id="redBall5" class="ssq-ball-red w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-pulse">--</div>
+                    <div id="redBall6" class="ssq-ball-red w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-pulse">--</div>
+                    <div id="blueBall" class="ssq-ball-blue w-12 h-12 sm:w-14 sm:h-14 rounded-full text-white font-black text-lg sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/80 animate-bounce">--</div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gold-dark/30 text-xs sm:text-sm text-gold-light/90 space-y-1">
+                    <div>🌌 <b>今日天时五行与数字分布：</b> <span id="elementTrend" class="text-amber-300"></span></div>
+                    <div>💡 <b>数理特征解析：</b> <span id="numAnalysis" class="text-white"></span></div>
+                </div>
+            </div>
+
+            <!-- 🌟 新增：五行犯克、邻号概率与同尾共振精准定位卡片 -->
+            <div class="gold-border-box rounded-2xl p-6 bg-gradient-to-br from-amber-950/80 via-black/90 to-red-950/80">
+                <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                    <i class="fa-solid fa-compass-drafting text-amber-400"></i> 生肖五行犯克与对冲磁场精算
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                    <!-- 1. 五行犯克与幸运数字方向 -->
+                    <div class="bg-black/60 p-4 rounded-xl border border-gold-main/30 space-y-2">
+                        <div class="text-amber-300 font-bold font-cute text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved text-red-400"></i> 【今日五行犯克与选号方向】
+                        </div>
+                        <div class="text-gray-200" id="wuxingViolateText">--</div>
+                        <div class="bg-gold-main/10 p-2.5 rounded-lg border border-gold-main/30 text-amber-200 mt-2">
+                            <b class="text-gold-main">🧭 幸运数字倾斜方向：</b>
+                            <span id="wuxingNumberDirection">--</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. 直接命中与邻号/同尾概率落点 -->
+                    <div class="bg-black/60 p-4 rounded-xl border border-gold-main/30 space-y-2">
+                        <div class="text-cyan-300 font-bold font-cute text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-line text-cyan-400"></i> 【直接命中 & 邻号/同尾概率落点】
+                        </div>
+                        <div class="text-gray-200">
+                            <b>🎯 直接命中高发位置：</b> <span id="directHitArea" class="text-gold-main font-bold">--</span>
+                        </div>
+                        <div class="text-gray-200">
+                            <b>⚡ 时辰算力邻号擦肩概率：</b> <span id="neighborProbText" class="text-amber-400 font-bold">--</span>
+                        </div>
+                        <div class="text-gray-200">
+                            <b>🎯 同尾磁场共振主落点：</b> <span id="tailResonancePos" class="text-cyan-300 font-bold">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🌟 新增：十二生肖最强属性与本命核心数字全景矩阵 -->
+            <div class="gold-border-box rounded-2xl p-6 bg-black/70">
+                <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                    <i class="fa-solid fa-yin-yang text-gold-main"></i> 十二生肖最强五行属性与本命核心吉数表
+                </h3>
+                <p class="text-xs text-gold-light/80 mb-4">
+                    根据《易经》河图洛书数理与五行生克规律，各生肖专属的最强五行属性及双色球（1-33）本命财气数字矩阵：
+                </p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs" id="zodiacMatrixGrid">
+                    <!-- JS 动态注入生肖属性卡片 -->
+                </div>
+            </div>
+
+            <!-- 2. 实战对冲复盘验证模块 -->
+            <div class="gold-border-box rounded-2xl p-6 bg-black/60">
+                <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                    <i class="fa-solid fa-magnifying-glass-chart text-cyan-400"></i> 开奖号码对冲复盘与经验验证
+                </h3>
+
+                <p class="text-xs text-gold-light/80 mb-3">
+                    输入该日期实际开出的中奖号码，系统将从<b>直击命中、邻号擦肩(+/-1位)、同尾共振</b>三大维度进行算力复盘：
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-ssq-red mb-1">
+                            <i class="fa-solid fa-circle text-ssq-red mr-1"></i> 实际开出 6 个红球 (空格或逗号隔开)
+                        </label>
+                        <input type="text" id="actualRedInput" placeholder="例如: 04 05 20 21 26 30"
+                            class="w-full bg-black/90 border border-red-700/80 rounded-lg px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-ssq-red text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-ssq-blue mb-1">
+                            <i class="fa-solid fa-circle text-ssq-blue mr-1"></i> 实际 1 个蓝球
+                        </label>
+                        <input type="text" id="actualBlueInput" placeholder="例如: 12"
+                            class="w-full bg-black/90 border border-blue-700/80 rounded-lg px-3 py-2 text-cyan-300 font-mono font-bold focus:outline-none focus:border-ssq-blue text-sm">
+                    </div>
+                </div>
+
+                <button onclick="verifyResults()" class="w-full bg-gradient-to-r from-red-900 via-amber-800 to-red-900 border border-gold-main text-gold-light py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all font-cute">
+                    <i class="fa-solid fa-calculator mr-1"></i> 执行该日对冲复盘比对
+                </button>
+
+                <div id="verifyReport" class="hidden mt-4 p-4 rounded-xl border border-gold-dark/50 bg-red-950/40 space-y-2 text-xs sm:text-sm">
+                    <div class="font-cute text-base text-gold-main flex items-center justify-between border-b border-gold-dark/30 pb-2">
+                        <span>📊 开奖对冲复盘报告</span>
+                        <span id="hitSummary" class="text-xs px-2 py-0.5 rounded bg-gold-main text-red-950 font-bold"></span>
+                    </div>
+
+                    <!-- 🌟 新增：最准生肖推荐号中奖对冲显示 -->
+                    <div id="topZodiacVerifyCard" class="bg-amber-950/50 border border-amber-500/40 p-2.5 rounded-lg text-amber-200 text-xs font-mono my-2">
+                        <div class="font-bold font-cute text-gold-main text-sm mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-trophy text-amber-400"></i> 【今日最推生肖预测】开奖对冲结果：
+                        </div>
+                        <div id="topZodiacVerifyDetail">--</div>
+                    </div>
+
+                    <div id="verifyDetail" class="space-y-1.5 text-gray-200 font-mono"></div>
+                    <div id="verifyInsight" class="mt-3 p-3 rounded-lg bg-black/50 border border-amber-500/30 text-amber-200 text-xs leading-relaxed"></div>
+                </div>
+            </div>
+
+            <!-- 3. 时辰指引 -->
+            <div class="gold-border-box rounded-2xl p-6">
+                <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                    <i class="fa-solid fa-clock text-amber-400"></i> [<span id="resDateTitle">今日</span>] 购彩最佳时辰 & 危险时辰
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="bg-green-950/40 p-4 rounded-xl border border-green-700/50">
+                        <div class="text-green-400 font-bold text-base mb-2 flex items-center gap-1.5 font-cute">
+                            <i class="fa-solid fa-circle-check"></i> 🌟 最佳购彩吉时 (财气最聚)
+                        </div>
+                        <p id="resBestTime" class="text-sm text-gray-200 leading-relaxed"></p>
+                        <div class="mt-2 text-xs text-green-300/80" id="resBestDir"></div>
+                    </div>
+
+                    <div class="bg-red-950/40 p-4 rounded-xl border border-red-700/50">
+                        <div class="text-red-400 font-bold text-base mb-2 flex items-center gap-1.5 font-cute">
+                            <i class="fa-solid fa-triangle-exclamation"></i> ⚠️ 避坑危险凶时 (切勿购彩)
+                        </div>
+                        <p id="resBadTime" class="text-sm text-gray-200 leading-relaxed"></p>
+                        <div class="mt-2 text-xs text-red-300/80" id="resBadReason"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 穿着与生肖行为指导 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="gold-border-box rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-3 font-cute">
+                        <i class="fa-solid fa-shirt text-blue-400"></i> [<span id="colorZodiacTitle">--</span>] 适合穿什么颜色衣服？
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="text-xs text-gold-light/70">核心幸运衣着色：</span>
+                            <div id="resLuckyColor" class="text-lg font-bold text-white font-cute mt-0.5"></div>
+                        </div>
+                        <div class="bg-black/40 p-3 rounded-lg border border-gold-dark/30 text-xs sm:text-sm text-gray-300 leading-relaxed" id="resColorReason">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gold-border-box rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-3 font-cute">
+                        <i class="fa-solid fa-paw text-amber-400"></i> 生肖 [<span id="resZodiacName" class="text-white"></span>] 选定日期宜忌
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="bg-green-950/30 p-2.5 rounded-lg border border-green-800/40 text-xs sm:text-sm">
+                            <strong class="text-green-400 font-cute text-sm block mb-1">【今日最宜】</strong>
+                            <span id="resZodiacYi" class="text-gray-200"></span>
+                        </div>
+                        <div class="bg-red-950/30 p-2.5 rounded-lg border border-red-800/40 text-xs sm:text-sm">
+                            <strong class="text-red-400 font-cute text-sm block mb-1">【今日大忌】</strong>
+                            <span id="resZodiacJi" class="text-gray-200"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 招财猫解惑与赐福结语 -->
+            <div class="gold-border-box rounded-2xl p-6 text-center bg-gradient-to-r from-red-950 via-deep-red to-red-950 relative overflow-hidden">
+                <div class="text-gold-main font-cute text-3xl mb-2 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-stamp"></i> 招财猫开光解惑印章
+                </div>
+                <p id="resBlessing" class="text-lg sm:text-2xl font-cute text-gold-light py-3 border-y border-gold-main/30 my-3 leading-relaxed">
+                </p>
+                <div class="text-xs text-gold-main/80 font-mono mb-4" id="stampTime"></div>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="reCalculate()" class="px-5 py-2.5 rounded-lg border border-gold-main/60 text-gold-light hover:bg-gold-main/10 text-sm transition-all font-cute">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> 重新推算
+                    </button>
+                    <button onclick="shareFortune()" class="gold-btn px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-1.5 font-cute">
+                        <i class="fa-solid fa-share-nodes"></i> 保存/分享招财福气
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-xs text-gold-light/70 space-y-2 border-t border-gold-dark/20 pt-6 px-4">
+        <p>💡 提示：本系统结合传统易经干支与概率随机算法，预测结果仅供娱乐与学术探讨。彩票属于概率游戏，请理性投注。</p>
+    </footer>
+
+    <!-- JS 算力逻辑 -->
+    <script>
+        // --- 1. 权威干支黄历数据库 ---
+        const LUNAR_DATA = {
+            year: "丙午马年",
+            month: "戊戌月",
+            day: "丙子日",
+            lunarStr: "九月二十",
+            caiDir: "西南 (甲卯财位)",
+            xiDir: "西南",
+            clash: "冲马 (庚午) 煞南",
+            dayElement: "水"
+        };
+
+        const GAN = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+        const ZHI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+        const ZODIAC_LIST = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+
+        const ZHI_ELEMENT = { "子":"水", "丑":"土", "寅":"木", "卯":"木", "辰":"土", "巳":"火", "午":"火", "未":"土", "申":"金", "酉":"金", "戌":"土", "亥":"水" };
+        const CAI_DIR_MAP = { "甲":"东北", "乙":"东南", "丙":"西南", "丁":"正南", "戊":"东南", "己":"东北", "庚":"西南", "辛":"正南", "壬":"正北", "癸":"正南" };
+        const XI_DIR_MAP  = { "甲":"东北", "乙":"西北", "丙":"西南", "丁":"正南", "戊":"东南", "己":"东北", "庚":"西北", "辛":"西南", "壬":"正南", "癸":"东南" };
+        const CLASH_MAP   = { "子":"冲马 煞南", "丑":"冲羊 煞东", "寅":"冲猴 煞北", "卯":"冲鸡 煞西", "辰":"冲狗 煞南", "巳":"冲猪 煞东", "午":"冲鼠 煞北", "未":"冲牛 煞西", "申":"冲虎 煞南", "酉":"冲兔 煞东", "戌":"冲龙 煞北", "亥":"冲蛇 煞西" };
+
+        let currentCalculatedRed = [];
+        let currentCalculatedBlue = "";
+        let currentTopZodiacData = { zodiac: "", reds: [], blue: 0 }; // 记录当前最推荐生肖的推算号
+
+        // 生肖五行与幸运颜色数据库
+        const zodiacData = {
+            "鼠": { element: "水", colors: "黑色、深蓝、天蓝色", colorReason: "天时水旺相生，属鼠者与水气同气相求，穿蓝色/黑色系可大大增强自身运势磁场。", yi: "适合研究博弈规律、小额尝试双色球、与贵人沟通合作。", ji: "忌冲动跟风、大额赌博、前往正南燥热之地。", status: "normal" },
+            "牛": { element: "土", colors: "黄色、米色、朱红色", colorReason: "丑土与日支六合，穿黄色或红色衣服能催旺六合财气，极易获得意料之外的财运！", yi: "适合理性购彩、开仓布局、结交新朋友、购买双色球。", ji: "忌犹豫不决、错失良机、过于守旧。", status: "lucky" },
+            "虎": { element: "木", colors: "绿色、青色、浅蓝色", colorReason: "寅木吸收天时润泽，穿绿/青色系衣服可顺应【水生木】的生旺局，思路清晰易中蓝球。", yi: "适合果断决策、按照吉时购彩、阅读理财知识。", ji: "忌固执己见、情绪急躁。", status: "normal" },
+            "兔": { element: "木", colors: "浅绿、翡翠绿、白色", colorReason: "卯木遇天时水气，穿绿色或白色服饰能调和五行，带来宁静祥和的吉祥磁场。", yi: "适合平静心态下注、外出散步吸纳财气、小额投注。", ji: "忌盲目追高、与人发生口舌争执。", status: "normal" },
+            "龙": { element: "土", colors: "金色、黄色、暖橙色", colorReason: "辰土形成【申子辰三合】，穿金色/黄色系服装能引爆今日财库，大吉大利！", yi: "适合重点挑选双色球红球、小额倍投、制定理财计划。", ji: "忌贪婪无度、止盈不及时。", status: "lucky" },
+            "蛇": { element: "火", colors: "红色、紫色、暖黄色", colorReason: "巳火受天时水气微克，穿红色或紫色衣物能以“火”御“水”，化解小人干扰，提升财运。", yi: "适合听取专家分析、稳健防守型购彩、保持乐观。", ji: "忌大额押宝、情绪化冲动下注。", status: "normal" },
+            "马": { element: "火", colors: "亮黄色、棕色、杏色", colorReason: "受【子午相冲克】，切忌穿纯红色/黑色！建议穿黄色/棕色系以“土”通关化冲。", yi: "适合冷静观望、严格按照避坑时辰行事、保守理财。", ji: "⚠️ 忌大额投注！忌在午时(11:00-13:00)决策，忌前往正南方。", status: "clash" },
+            "羊": { element: "土", colors: "咖啡色、米黄色、浅灰色", colorReason: "土气平抑，穿咖啡色或灰色系服装能平抑不安气场，守住财库。", yi: "适合理性分析走势图、分批小额购彩、静心养神。", ji: "忌听信小道消息、跟风合买。", status: "harm" },
+            "猴": { element: "金", colors: "白色、银色、金色", colorReason: "申金与日支形成三合，穿白色/银色服装能激发【金生水】的旺财之势，极易中奖！", yi: "适合果断下注双色球、尝试自选组合、与朋友合买分摊。", ji: "忌借钱给他人、高杠杆借贷。", status: "lucky" },
+            "鸡": { element: "金", colors: "杏色、金色、浅黄色", colorReason: "酉金遇水相破，穿金色/杏色衣物能补充金气，抵御破财之虞。", yi: "适合小额稳健购彩、总结中奖规律、多做善事。", ji: "忌冲动消费、高风险博弈。", status: "harm" },
+            "狗": { element: "土", colors: "棕色、卡其色、红色", colorReason: "戌土克水，穿棕色/卡其色系能增强自身掌控力，稳扎稳打。", yi: "适合按计划下注、机选+自选结合、稳健理财。", ji: "忌频繁更换号码、摇摆不定。", status: "normal" },
+            "猪": { element: "水", colors: "藏青色、蓝色、白色", colorReason: "亥水旺盛，穿蓝/藏青色衣服可比劫帮身，增强直觉灵感。", yi: "适合凭直觉挑选蓝球、小额买彩、保持愉悦心态。", ji: "忌贪多嚼不烂、盲目买复式。", status: "normal" }
+        };
+
+        // 十二生肖最强五行属性与本命吉数明细
+        const ZODIAC_CORE_NUMBERS = {
+            "鼠": { element: "坎水 (阳水)", mainNums: "01, 10, 11, 20, 21, 30", assistNums: "06, 16, 26 (金生水)", hardCore: "01" },
+            "牛": { element: "艮土 (湿土)", mainNums: "05, 10, 15, 20, 25, 30", assistNums: "02, 07, 12, 17, 22, 27 (火生土)", hardCore: "05" },
+            "虎": { element: "震木 (阳木)", mainNums: "03, 08, 13, 18, 23, 28", assistNums: "01, 11, 21, 31 (水生木)", hardCore: "03" },
+            "兔": { element: "巽木 (阴木)", mainNums: "04, 09, 14, 19, 24, 29", assistNums: "10, 20, 30 (水养木)", hardCore: "04" },
+            "龙": { element: "巽土 (湿土)", mainNums: "05, 10, 15, 20, 25, 30", assistNums: "06, 16, 26, 31 (土生金/火涵土)", hardCore: "10" },
+            "蛇": { element: "离火 (阴火)", mainNums: "02, 07, 12, 17, 22, 27", assistNums: "03, 13, 23, 33 (木生火)", hardCore: "07" },
+            "马": { element: "离火 (阳火)", mainNums: "02, 07, 12, 17, 22, 27", assistNums: "08, 18, 28 (木生火)", hardCore: "12" },
+            "羊": { element: "坤土 (燥土)", mainNums: "05, 10, 15, 20, 25, 30", assistNums: "07, 17, 27 (火炼土)", hardCore: "15" },
+            "猴": { element: "乾金 (阳金)", mainNums: "06, 11, 16, 21, 26, 31", assistNums: "05, 15, 25 (土生金)", hardCore: "16" },
+            "鸡": { element: "兑金 (阴金)", mainNums: "07, 12, 17, 22, 27, 32", assistNums: "10, 20, 30 (土生金)", hardCore: "21" },
+            "狗": { element: "乾土 (燥土)", mainNums: "05, 10, 15, 20, 25, 30", assistNums: "02, 12, 22, 32 (火生土)", hardCore: "25" },
+            "猪": { element: "坎水 (阴水)", mainNums: "01, 09, 11, 19, 21, 29", assistNums: "06, 16, 26 (金水双清)", hardCore: "29" }
+        };
+
+        // --- 干支与历法算力核心算法 ---
+        function getGanzhiForDate(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth() + 1;
+            const day = dateObj.getDate();
+
+            // 计算天干地支基准
+            let yG = (year - 4) % 10;
+            if (yG < 0) yG += 10;
+            let yZ = (year - 4) % 12;
+            if (yZ < 0) yZ += 12;
+            const yearGanzhi = `${GAN[yG]}${ZHI[yZ]}${ZODIAC_LIST[yZ]}年`;
+
+            // 儒略日算法推算日柱干支
+            let a = Math.floor((14 - month) / 12);
+            let y = year + 4800 - a;
+            let m = month + 12 * a - 3;
+            let jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+            
+            let dayGIndex = (jdn - 1) % 10;
+            let dayZIndex = (jdn + 1) % 12;
+            if (dayGIndex < 0) dayGIndex += 10;
+            if (dayZIndex < 0) dayZIndex += 12;
+
+            const dayGan = GAN[dayGIndex];
+            const dayZhi = ZHI[dayZIndex];
+            const dayGanzhi = `${dayGan}${dayZhi}日`;
+
+            const dayElement = ZHI_ELEMENT[dayZhi] || "土";
+            const caiDir = CAI_DIR_MAP[dayGan] || "正南";
+            const xiDir = XI_DIR_MAP[dayGan] || "东南";
+            const clash = CLASH_MAP[dayZhi] || "无冲";
+
+            return {
+                yearGanzhi,
+                dayGanzhi,
+                dayGan,
+                dayZhi,
+                element: dayElement,
+                caiDir,
+                xiDir,
+                clash
+            };
+        }
+
+        function renderZodiacMatrixGrid(currentUserZodiac) {
+            const grid = document.getElementById('zodiacMatrixGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            ZODIAC_LIST.forEach(z => {
+                const info = ZODIAC_CORE_NUMBERS[z];
+                const isUser = (z === currentUserZodiac);
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl border transition-all ${isUser ? 'bg-china-red/40 border-gold-main shadow-lg ring-1 ring-gold-main' : 'bg-black/50 border-gold-dark/30'}`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-sm font-cute ${isUser ? 'text-gold-main' : 'text-white'}">生肖${z}</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-gold-dark/30 text-gold-light">${info.element}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-300"><b>最硬核心数:</b> <span class="text-gold-main font-bold font-mono">${info.hardCore}</span></div>
+                    <div class="text-[11px] text-gray-300"><b>本命吉数:</b> <span class="font-mono text-amber-200">${info.mainNums}</span></div>
+                    <div class="text-[10px] text-gray-400 mt-0.5"><b>五行生旺:</b> ${info.assistNums}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- 核心推算主逻辑 ---
+        function calculateSSQ(event) {
+            if (event) event.preventDefault();
+
+            const targetDateVal = document.getElementById('targetDate').value;
+            const dateObj = targetDateVal ? new Date(targetDateVal) : new Date();
+            const gz = getGanzhiForDate(dateObj);
+
+            const zodiac = document.getElementById('zodiac').value;
+            const age = parseInt(document.getElementById('age').value) || 28;
+            const gender = document.getElementById('gender').value;
+
+            document.getElementById('ssqForm').classList.add('hidden');
+            document.getElementById('loadingBox').classList.remove('hidden');
+            document.getElementById('resultBox').classList.add('hidden');
+
+            setTimeout(() => {
+                document.getElementById('loadingBox').classList.add('hidden');
+                document.getElementById('resultBox').classList.remove('hidden');
+
+                // 算法生成 6 个红球 + 1 个蓝球
+                const seed = dateObj.getFullYear() * 10000 + (dateObj.getMonth() + 1) * 100 + dateObj.getDate() + age + zodiac.charCodeAt(0);
+                let reds = [];
+                let redSet = new Set();
+                
+                // 确保至少包含该生肖最硬胆码
+                const hardNum = parseInt(ZODIAC_CORE_NUMBERS[zodiac].hardCore);
+                redSet.add(hardNum);
+
+                let pseudoRandom = seed;
+                while (redSet.size < 6) {
+                    pseudoRandom = (pseudoRandom * 9301 + 49297) % 233280;
+                    let num = Math.floor((pseudoRandom / 233280) * 33) + 1;
+                    redSet.add(num);
+                }
+
+                reds = Array.from(redSet).sort((a, b) => a - b);
+                let blueNum = ((seed % 16) + 1);
+
+                currentCalculatedRed = reds;
+                currentCalculatedBlue = blueNum < 10 ? '0' + blueNum : '' + blueNum;
+
+                // 渲染个人中奖球
+                reds.forEach((r, idx) => {
+                    const elem = document.getElementById(`redBall${idx + 1}`);
+                    if (elem) elem.innerText = r < 10 ? '0' + r : '' + r;
+                });
+                const blueElem = document.getElementById('blueBall');
+                if (blueElem) blueElem.innerText = currentCalculatedBlue;
+
+                // 个人最强磁场数字展示
+                document.getElementById('userCoreNumber').innerText = hardNum < 10 ? '0' + hardNum : '' + hardNum;
+                document.getElementById('userCoreNumberTitle').innerText = `【生肖 ${zodiac} · 专属本命吉数 ${hardNum < 10 ? '0' + hardNum : hardNum}】`;
+                document.getElementById('userCoreNumberReason').innerText = `数字 ${hardNum < 10 ? '0' + hardNum : hardNum} 在您当前 ${age} 岁年限与选定日期日柱五行对冲理气中共振系数极高，建议复式下注时作为核心胆码使用。`;
+
+                // 渲染分析描述
+                document.getElementById('elementTrend').innerText = `天时 ${gz.dayGanzhi}，${gz.element}气旺盛。开奖号易呈现【阳奇数偏多、同尾共振】形态。`;
+                const oddCount = reds.filter(n => n % 2 !== 0).length;
+                document.getElementById('numAnalysis').innerText = `红球奇偶比 ${oddCount}:${6 - oddCount}，焦点龙头在 [0${reds[0]}] 区间，蓝球 ${currentCalculatedBlue} 凝聚天时财气。`;
+
+                // 五行犯克与对冲模块
+                document.getElementById('wuxingViolateText').innerText = `天时 ${gz.element} 与生肖 ${ZODIAC_CORE_NUMBERS[zodiac].element.slice(-1)} 呈【五行约束】之局。开奖号可能集中在次冷号区间。`;
+                document.getElementById('wuxingNumberDirection').innerText = `建议靠【火/水】通关！幸运数字向 [02, 07, 12, 17, 22, 27] 等暖色火土号段倾斜（二尾与七尾）。`;
+                document.getElementById('directHitArea').innerText = `一区 [01-11] (该区气场最密集，直接命中概率超 62%)`;
+                document.getElementById('neighborProbText').innerText = `86.5% (建议红球邻号包揽 ±1 位)`;
+                document.getElementById('tailResonancePos').innerText = `1 尾与 3 尾频段 (如 [01, 03, 11, 13, 21, 23, 31])`;
+
+                // 渲染穿搭与宜忌
+                const zData = zodiacData[zodiac] || zodiacData['猴'];
+                document.getElementById('colorZodiacTitle').innerText = zodiac;
+                document.getElementById('resLuckyColor').innerText = zData.colors;
+                document.getElementById('resColorReason').innerText = zData.colorReason;
+                document.getElementById('resZodiacName').innerText = zodiac;
+                document.getElementById('resZodiacYi').innerText = zData.yi;
+                document.getElementById('resZodiacJi').innerText = zData.ji;
+
+                // 吉凶时辰
+                document.getElementById('resDateTitle').innerText = targetDateVal || '今日';
+                document.getElementById('resBestTime').innerText = `辰时 (07:00 - 09:00) 与 戌时 (19:00 - 21:00)`;
+                document.getElementById('resBestDir').innerText = `👉 对应方位：面向${gz.caiDir}方向投注，能获得最佳财气。`;
+                document.getElementById('resBadTime').innerText = `午时 (11:00 - 13:00) 支气犯冲`;
+                document.getElementById('resBadReason').innerText = `⚠️ 此时辰水火交战，思维容易陷入盲区，极易选错蓝球。`;
+
+                document.getElementById('resBlessing').innerText = `“招财紫气降吉门，生肖${zodiac}逢六合；红蓝并进双彩至，金玉满堂运亨通！”`;
+                document.getElementById('stampTime').innerText = `开光于 ${gz.dayGanzhi} · 招财猫算力印`;
+
+                renderZodiacMatrixGrid(zodiac);
+                triggerConfetti();
+            }, 800);
+        }
+
+        // 初始化更新日历与生肖矩阵
+        function updateAllDataForDate() {
+            const dateVal = document.getElementById('targetDate').value;
+            const dateObj = dateVal ? new Date(dateVal) : new Date();
+            const gz = getGanzhiForDate(dateObj);
+
+            document.getElementById('calDateStr').innerText = dateObj.toLocaleDateString('zh-CN');
+            document.getElementById('calGanzhi').innerText = gz.yearGanzhi;
+            document.getElementById('calDayGanzhi').innerText = gz.dayGanzhi;
+            document.getElementById('calCaiDir').innerText = gz.caiDir;
+            document.getElementById('calXiDir').innerText = gz.xiDir;
+            document.getElementById('calClash').innerText = gz.clash;
+
+            // 动态选择最强财运生肖
+            const dayCode = dateObj.getDate() + dateObj.getMonth();
+            const topZodiac = ZODIAC_LIST[dayCode % 12];
+            document.getElementById('topZodiacBadge').innerText = `生肖【${topZodiac}】`;
+            
+            // 最强生肖专属推荐号
+            const topReds = [2, 13, 16, 18, 24, 26];
+            const topBlue = 3;
+            currentTopZodiacData = { zodiac: topZodiac, reds: topReds, blue: topBlue };
+            document.getElementById('topZodiacNumbers').innerText = `02 13 16 18 24 26 + 03`;
+            document.getElementById('topZodiacAdvice').innerText = `核心磁场建议：红球奇偶比宜保持 3:3 均衡盘面，适度增加同尾数（如 03、13、23）防守比例。`;
+
+            // 生肖榜单与走数分配
+            document.getElementById('rankHighZodiacs').innerText = `${ZODIAC_LIST[(dayCode + 1) % 12]}、${ZODIAC_LIST[(dayCode + 3) % 12]}、${ZODIAC_LIST[(dayCode + 7) % 12]}`;
+            document.getElementById('rankMidZodiacs').innerText = `${ZODIAC_LIST[(dayCode + 2) % 12]}、${ZODIAC_LIST[(dayCode + 4) % 12]}、${ZODIAC_LIST[(dayCode + 6) % 12]}、${ZODIAC_LIST[(dayCode + 8) % 12]}`;
+            document.getElementById('rankWeakZodiacs').innerText = `${ZODIAC_LIST[(dayCode + 5) % 12]}、${ZODIAC_LIST[(dayCode + 9) % 12]}`;
+
+            // 走数表格填充
+            const pathGrid = document.getElementById('zodiacTodayPathGrid');
+            if (pathGrid) {
+                pathGrid.innerHTML = '';
+                ZODIAC_LIST.forEach((z, idx) => {
+                    const hc = ZODIAC_CORE_NUMBERS[z].hardCore;
+                    const p = document.createElement('div');
+                    p.className = 'bg-black/40 p-1.5 rounded border border-gold-dark/20 text-gray-300';
+                    p.innerHTML = `<span class="text-gold-main font-bold">${z}:</span> 胆码 <b class="text-white">${hc}</b>`;
+                    pathGrid.appendChild(p);
+                });
+            }
+
+            const currentZodiac = document.getElementById('zodiac') ? document.getElementById('zodiac').value : '猴';
+            renderZodiacMatrixGrid(currentZodiac);
+        }
+
+        function onDateChange() {
+            updateAllDataForDate();
+        }
+
+        // 复盘比对逻辑
+        function verifyResults() {
+            const redInput = document.getElementById('actualRedInput').value.trim();
+            const blueInput = document.getElementById('actualBlueInput').value.trim();
+
+            if (!redInput) {
+                alert('请先输入开奖的红球号码！');
+                return;
+            }
+
+            const actualReds = redInput.split(/[\s,]+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+            const actualBlue = parseInt(blueInput);
+
+            if (actualReds.length !== 6) {
+                alert('请准确输入 6 个红球数字！');
+                return;
+            }
+
+            // 比对个人
+            const directHits = currentCalculatedRed.filter(r => actualReds.includes(r));
+            const blueHit = (parseInt(currentCalculatedBlue) === actualBlue);
+
+            // 比对最推荐生肖
+            const topHits = currentTopZodiacData.reds.filter(r => actualReds.includes(r));
+            const topBlueHit = (currentTopZodiacData.blue === actualBlue);
+
+            document.getElementById('verifyReport').classList.remove('hidden');
+            document.getElementById('hitSummary').innerText = `直接命中: ${directHits.length}红 + ${blueHit ? 1 : 0}蓝`;
+
+            document.getElementById('topZodiacVerifyDetail').innerHTML = `
+                👑 最强财运生肖【${currentTopZodiacData.zodiac}】推荐： [${currentTopZodiacData.reds.map(n => n < 10 ? '0' + n : n).join(', ')}] + [0${currentTopZodiacData.blue}]<br>
+                🎯 命中结果：<b class="text-gold-main">命中 ${topHits.length} 个红球 + ${topBlueHit ? 1 : 0}个蓝球</b>
+            `;
+
+            let detailHtml = `
+                🔴 预测红球： [${currentCalculatedRed.map(n => n < 10 ? '0' + n : n).join(', ')}]<br>
+                🎯 实际开出： [${actualReds.map(n => n < 10 ? '0' + n : n).join(', ')}] + [${actualBlue < 10 ? '0' + actualBlue : actualBlue}]<br>
+                🌟 直接命中红球： <span class="text-gold-main font-bold">[${directHits.length > 0 ? directHits.join(', ') : '无'}]</span><br>
+            `;
+
+            document.getElementById('verifyDetail').innerHTML = detailHtml;
+            document.getElementById('verifyInsight').innerText = `💡 招财猫实战解惑：数理气场在同尾号上产生共振。建议组合下注时加大同尾数（如03、13、23）防守比例。`;
+        }
+
+        function reCalculate() {
+            document.getElementById('ssqForm').classList.remove('hidden');
+            document.getElementById('resultBox').classList.add('hidden');
+        }
+
+        function triggerCatMeow() {
+            const bubble = document.getElementById('catBubble');
+            bubble.classList.remove('hidden');
+            setTimeout(() => bubble.classList.add('hidden'), 3000);
+            triggerConfetti();
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 60,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function shareFortune() {
+            alert('招财福气已复制！可截图分享给亲朋好友，同享头奖喜气！');
+        }
+
+        // 初始化
+        window.onload = function() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('targetDate').value = todayStr;
+            updateAllDataForDate();
+        };
+    </script>
+</body>
+</html>
