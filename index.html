@@ -3,779 +3,719 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>招财猫动态纳福 - 权威黄历运势算力终端</title>
+    <title>招财猫动态纳福 - 权威历法与串关时辰算力终端</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts 国风与萌系字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@600;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <!-- Canvas-Confetti 礼花特效 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'china-red': '#C8102E',
+                        'deep-red': '#8B0000',
+                        'gold-light': '#FFE57F',
+                        'gold-main': '#FFD700',
+                        'gold-dark': '#B8860B',
+                        'cat-white': '#FFFDF7'
+                    },
+                    fontFamily: {
+                        'calligraphy': ['"Ma Shan Zheng"', 'cursive', 'serif'],
+                        'serif-sc': ['"Noto Serif SC"', 'serif'],
+                        'cute': ['"ZCOOL KuaiLe"', 'cursive', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --gold-primary: #ffd700;
-            --gold-light: #fff3a0;
-            --gold-dark: #b8860b;
-            --red-main: #c01920;
-            --red-dark: #8b0000;
-            --bg-color: #5c060a;
-            --card-bg: rgba(40, 5, 8, 0.85);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 50% 20%, #9e0e16 0%, var(--bg-color) 70%),
-                radial-gradient(circle at 20% 80%, #3a0205 0%, transparent 50%);
-            color: #fff;
+            background: radial-gradient(circle at center, #8B0000 0%, #4A000A 60%, #1A0003 100%);
+            color: #FFF8DC;
+            font-family: 'Noto Serif SC', -apple-system, sans-serif;
             min-height: 100vh;
-            padding: 20px 10px;
             overflow-x: hidden;
-            position: relative;
         }
 
-        /* 动态背景金币 Canvas */
-        #coinCanvas {
+        /* 招财猫背景光晕 */
+        .god-rays {
+            background: radial-gradient(circle, rgba(255,215,0,0.45) 0%, rgba(255,215,0,0) 70%);
+            animation: pulse-glow 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(0.9) rotate(0deg); opacity: 0.6; }
+            100% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+        }
+
+        /* 招财猫摇爪动画 */
+        .beckoning-paw {
+            transform-origin: 190px 150px;
+            animation: wave-paw 1.2s infinite ease-in-out alternate;
+        }
+
+        @keyframes wave-paw {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-22deg); }
+        }
+
+        /* 鎏金卡片与边框 */
+        .gold-border-box {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #FFE57F, #FFD700, #B8860B, #FFE57F) 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(255, 215, 0, 0.15);
+            background: rgba(40, 5, 8, 0.88);
+            backdrop-filter: blur(12px);
+        }
+
+        .gold-text {
+            background: linear-gradient(135deg, #FFF8DC 0%, #FFD700 50%, #DAA520 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-btn {
+            background: linear-gradient(180deg, #FFEA79 0%, #FFD700 40%, #C59B27 100%);
+            color: #5B0000;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+            transition: all 0.25s ease;
+        }
+        .gold-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.8);
+            background: linear-gradient(180deg, #FFF2A1 0%, #FFE033 40%, #DAA520 100%);
+        }
+
+        #coin-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 1;
+            z-index: 10;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
+        .meow-bubble {
+            animation: pop-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        /* 头部卡片与巨型招财猫 */
-        .header-box {
-            text-align: center;
-            padding: 20px 15px;
-            background: linear-gradient(135deg, rgba(168, 16, 25, 0.9), rgba(90, 4, 9, 0.9));
-            border: 2px solid var(--gold-primary);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,215,0,0.3);
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .header-title {
-            font-size: 28px;
-            font-weight: 900;
-            color: var(--gold-primary);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255,215,0,0.5);
-            margin-bottom: 5px;
-            letter-spacing: 2px;
-        }
-
-        .header-subtitle {
-            font-size: 13px;
-            color: var(--gold-light);
-            background: rgba(0,0,0,0.3);
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,215,0,0.3);
-            margin-bottom: 15px;
-        }
-
-        /* 超大招财猫容器 */
-        .cat-hero-container {
-            width: 260px;
-            height: 260px;
-            margin: 0 auto;
-            position: relative;
-            cursor: pointer;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
-            transition: transform 0.2s ease;
-        }
-
-        .cat-hero-container:hover {
-            transform: scale(1.03);
-        }
-
-        .cat-aura {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
-            animation: auraPulse 2.5s infinite alternate ease-in-out;
-            pointer-events: none;
-        }
-
-        @keyframes auraPulse {
-            0% { transform: scale(0.9); opacity: 0.5; }
-            100% { transform: scale(1.25); opacity: 1; }
-        }
-
-        /* 招财猫摇手动画 */
-        .waving-paw {
-            transform-origin: 190px 150px;
-            animation: wavePaw 1.2s ease-in-out infinite alternate;
-        }
-
-        @keyframes wavePaw {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(-22deg); }
-        }
-
-        /* 今日权威历法快讯 */
-        .calendar-badge-bar {
-            margin-top: 15px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 12px;
-            padding: 10px 15px;
-            border-left: 4px solid var(--gold-primary);
-            text-align: left;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .calendar-badge-bar .date-tag {
-            color: var(--gold-primary);
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        /* 主体表单卡片 */
-        .form-card {
-            background: var(--card-bg);
-            border: 1.5px solid var(--gold-dark);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            margin-bottom: 25px;
-            backdrop-filter: blur(5px);
-        }
-
-        .section-title {
-            font-size: 18px;
-            color: var(--gold-primary);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,215,0,0.2);
-            padding-bottom: 8px;
-        }
-
-        .section-title::before {
-            content: '🧧';
-            margin-right: 8px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 13px;
-            color: var(--gold-light);
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        .form-control {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 215, 0, 0.4);
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus {
-            border-color: var(--gold-primary);
-            box-shadow: 0 0 8px rgba(255,215,0,0.5);
-            background: rgba(0,0,0,0.7);
-        }
-
-        .btn-submit {
-            grid-column: 1 / -1;
-            margin-top: 10px;
-            background: linear-gradient(180deg, #ffe566 0%, #d49b00 100%);
-            color: #4a0000;
-            border: none;
-            border-radius: 25px;
-            padding: 14px;
-            font-size: 18px;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: 0 6px 15px rgba(212,155,0,0.4);
-            transition: all 0.2s;
-            letter-spacing: 1px;
-            text-align: center;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2deg);
-            box-shadow: 0 8px 20px rgba(255,215,0,0.6);
-            background: linear-gradient(180deg, #fff099 0%, #e6a800 100%);
-        }
-
-        .btn-submit:active {
-            transform: translateY(1deg);
-        }
-
-        /* 结果展示区 */
-        .result-box {
-            display: none;
-            background: var(--card-bg);
-            border: 2px solid var(--gold-primary);
-            border-radius: 16px;
-            padding: 22px;
-            margin-bottom: 25px;
-            animation: fadeIn 0.5s ease-out;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 风险警告牌 */
-        .risk-banner {
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            line-height: 1.5;
-        }
-
-        .risk-safe {
-            background: rgba(40, 167, 69, 0.25);
-            border: 1px solid #28a745;
-            color: #85e89d;
-        }
-
-        .risk-warn {
-            background: rgba(255, 193, 7, 0.25);
-            border: 1px solid #ffc107;
-            color: #ffe066;
-        }
-
-        .risk-danger {
-            background: rgba(220, 53, 69, 0.25);
-            border: 1px solid #dc3545;
-            color: #ff99a2;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .info-card {
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255, 215, 0, 0.25);
-            border-radius: 10px;
-            padding: 15px;
-        }
-
-        .info-card h4 {
-            color: var(--gold-primary);
-            font-size: 15px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .info-card p {
-            font-size: 13px;
-            color: #ddd;
-            line-height: 1.6;
-        }
-
-        /* 预测指数列表 */
-        .prediction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px dashed rgba(255,255,255,0.1);
-        }
-
-        .prediction-item:last-child {
-            border-bottom: none;
-        }
-
-        .stars {
-            color: #ffd700;
-            letter-spacing: 2px;
-        }
-
-        /* 赐福吉利话 */
-        .blessing-box {
-            background: linear-gradient(135deg, rgba(139, 0, 0, 0.6), rgba(74, 0, 0, 0.8));
-            border: 1px dashed var(--gold-primary);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .blessing-text {
-            font-size: 16px;
-            color: var(--gold-light);
-            font-weight: bold;
-            line-height: 1.6;
-            margin-bottom: 8px;
-        }
-
-        .footer-info {
-            text-align: center;
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            margin-top: 20px;
-            line-height: 1.5;
-        }
-
-        /* Toast 提示 */
-        #toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.85);
-            border: 1px solid var(--gold-primary);
-            color: var(--gold-light);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 999;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        @keyframes pop-bounce {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
-<body>
+<body class="relative pb-16">
 
-    <canvas id="coinCanvas"></canvas>
-    <div id="toast">喵~ 财神赐福！</div>
+    <!-- 金币雨 Canvas -->
+    <canvas id="coin-canvas"></canvas>
 
-    <div class="container">
-        <!-- 头部与招财猫 -->
-        <div class="header-box">
-            <div class="header-title">🐱 招财猫纳福·财运算力终端 💰</div>
-            <div class="header-subtitle">实时调取最新权威黄历干支 · 智能评估投资风险</div>
+    <!-- 顶栏灯笼与标识 -->
+    <div class="flex justify-between items-center px-4 pt-3 text-2xl text-gold-main opacity-90 max-w-5xl mx-auto">
+        <i class="fa-solid fa-lantern animate-bounce"></i>
+        <div class="text-xs sm:text-sm tracking-widest text-gold-light/90 font-serif-sc flex items-center gap-2">
+            <i class="fa-solid fa-cat text-gold-main"></i> 权威黄历 · 招财猫纳福终端
+        </div>
+        <i class="fa-solid fa-lantern animate-bounce"></i>
+    </div>
 
-            <!-- 超大矢量招财猫 -->
-            <div class="cat-hero-container" id="catHero" title="点击招财猫招财！">
-                <div class="cat-aura"></div>
-                <svg viewBox="0 0 300 300" width="100%" height="100%">
-                    <g>
-                        <!-- 猫尾巴 -->
-                        <path d="M 60 210 Q 30 180 40 140 Q 50 130 60 150 Q 50 180 75 210 Z" fill="#e65100" />
-                        <!-- 猫左手（抱金币/持牌） -->
-                        <path d="M 70 180 Q 50 200 80 230 C 100 240 110 210 95 190 Z" fill="#ffffff" stroke="#333" stroke-width="3"/>
-                        <!-- 左爪“千万两”牌子 -->
-                        <g transform="translate(45, 175) rotate(-15)">
-                            <rect x="0" y="0" width="38" height="60" rx="5" fill="#ffd700" stroke="#b8860b" stroke-width="2"/>
-                            <text x="19" y="25" font-size="14" font-weight="bold" fill="#8b0000" text-anchor="middle">千</text>
-                            <text x="19" y="48" font-size="14" font-weight="bold" fill="#8b0000" text-anchor="middle">万两</text>
+    <div class="max-w-4xl mx-auto px-4 py-4 relative z-20">
+
+        <!-- Header: 巨幅招财猫主视觉 -->
+        <header class="text-center relative mb-6">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 sm:w-96 sm:h-96 rounded-full god-rays pointer-events-none"></div>
+
+            <div class="relative z-20 inline-block">
+                <!-- 点击猫咪提示 -->
+                <div id="catBubble" class="hidden absolute -top-8 right-0 sm:-right-8 bg-gold-main text-red-950 font-bold px-3 py-1 rounded-full text-xs shadow-lg meow-bubble border border-white z-30 font-cute">
+                    喵~ 招财猫为你吸纳八方财气！🐾
+                </div>
+
+                <!-- 巨型矢量招财猫 -->
+                <div class="relative z-10 cursor-pointer group py-2 transform hover:scale-105 transition-transform duration-300" onclick="triggerCatMeow()">
+                    <svg class="w-60 h-60 sm:w-80 sm:h-80 md:w-88 md:h-88 mx-auto filter drop-shadow-[0_12px_28px_rgba(255,215,0,0.65)]" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 1. 身体与尾巴 -->
+                        <path d="M 230 220 C 275 230, 280 280, 240 290" stroke="#FFFDF7" stroke-width="18" stroke-linecap="round" fill="none"/>
+                        <path d="M 230 220 C 275 230, 280 280, 240 290" stroke="#333333" stroke-width="4" stroke-linecap="round" fill="none"/>
+                        <path d="M 80 180 C 80 280, 240 280, 240 180 C 240 150, 80 150, 80 180 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5"/>
+
+                        <!-- 2. 耳朵 -->
+                        <path d="M 70 100 L 40 45 C 40 45, 80 48, 102 72 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5" stroke-linejoin="round"/>
+                        <path d="M 64 62 L 52 50 C 52 50, 72 54, 86 70 Z" fill="#FF8080"/>
+                        <path d="M 250 100 L 280 45 C 280 45, 240 48, 218 72 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5" stroke-linejoin="round"/>
+                        <path d="M 256 62 L 268 50 C 268 50, 248 54, 234 70 Z" fill="#FF8080"/>
+
+                        <!-- 3. 头部 -->
+                        <ellipse cx="160" cy="120" rx="92" ry="78" fill="#FFFDF7" stroke="#333333" stroke-width="4.5"/>
+                        <path d="M 140 45 Q 160 38, 180 45 Q 160 55, 140 45 Z" fill="#C8102E" stroke="#333333" stroke-width="1.5"/>
+
+                        <!-- 4. 五官 (笑眼、腮红、嘴巴、胡须) -->
+                        <path d="M 105 112 Q 123 96, 138 114" stroke="#333333" stroke-width="5" stroke-linecap="round" fill="none"/>
+                        <path d="M 182 114 Q 197 96, 215 112" stroke="#333333" stroke-width="5" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="106" cy="130" rx="12" ry="7" fill="#FF8080" opacity="0.6"/>
+                        <ellipse cx="214" cy="130" rx="12" ry="7" fill="#FF8080" opacity="0.6"/>
+                        <ellipse cx="160" cy="120" rx="4.5" ry="3.5" fill="#FF8080"/>
+                        <path d="M 160 123 Q 152 133, 142 126" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <path d="M 160 123 Q 168 133, 178 126" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+                        <line x1="80" y1="112" x2="115" y2="118" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="75" y1="125" x2="112" y2="126" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="80" y1="138" x2="115" y2="133" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="240" y1="112" x2="205" y2="118" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="245" y1="125" x2="208" y2="126" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="240" y1="138" x2="205" y2="133" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+
+                        <!-- 5. 脖圈与大金铃铛 -->
+                        <path d="M 88 165 Q 160 200, 232 165 Q 160 178, 88 165 Z" fill="#C8102E" stroke="#333333" stroke-width="3"/>
+                        <circle cx="160" cy="188" r="16" fill="#FFD700" stroke="#333333" stroke-width="3"/>
+                        <circle cx="160" cy="188" r="4" fill="#8B0000"/>
+                        <line x1="160" y1="192" x2="160" y2="204" stroke="#333333" stroke-width="3"/>
+
+                        <!-- 6. 手捧大金元宝 -->
+                        <g transform="translate(0, 10)">
+                            <path d="M 115 220 C 115 200, 205 200, 205 220 C 225 225, 220 260, 100 260 C 80 260, 95 225, 115 220 Z" fill="#FFD700" stroke="#333333" stroke-width="4.5"/>
+                            <path d="M 115 220 C 130 205, 190 205, 205 220 C 185 235, 135 235, 115 220 Z" fill="#FFE57F" stroke="#333333" stroke-width="3"/>
+                            <text x="160" y="248" font-family="'Noto Serif SC', serif" font-size="18" font-weight="900" fill="#8B0000" text-anchor="middle">招财</text>
                         </g>
 
-                        <!-- 身体 -->
-                        <path d="M 80 140 C 60 250 240 250 220 140 Z" fill="#ffffff" stroke="#333" stroke-width="4"/>
-                        <!-- 红色肚兜/垫子底边 -->
-                        <path d="M 90 220 Q 150 250 210 220 C 200 255 100 255 90 220 Z" fill="#c01920" />
-
-                        <!-- 肚子上的大元宝 -->
-                        <g transform="translate(115, 180)">
-                            <path d="M 10 15 Q 0 0 35 0 Q 70 0 60 15 Q 70 35 35 35 Q 0 35 10 15 Z" fill="#ffd700" stroke="#b8860b" stroke-width="2"/>
-                            <circle cx="35" cy="12" r="10" fill="#fff3a0" />
-                            <text x="35" y="28" font-size="11" font-weight="bold" fill="#8b0000" text-anchor="middle">招财</text>
+                        <!-- 7. 左手千万两金牌 -->
+                        <g transform="rotate(-15, 100, 210)">
+                            <rect x="70" y="170" width="40" height="62" rx="14" fill="#FFD700" stroke="#333333" stroke-width="3.5"/>
+                            <rect x="75" y="175" width="30" height="52" rx="10" fill="#FFE57F" stroke="#B8860B" stroke-width="1.5"/>
+                            <text x="90" y="197" font-family="'Noto Serif SC', serif" font-size="14" font-weight="900" fill="#8B0000" text-anchor="middle">千</text>
+                            <text x="90" y="215" font-family="'Noto Serif SC', serif" font-size="14" font-weight="900" fill="#8B0000" text-anchor="middle">万</text>
                         </g>
+                        <circle cx="106" cy="210" r="14" fill="#FFFDF7" stroke="#333333" stroke-width="3.5"/>
 
-                        <!-- 头部 -->
-                        <circle cx="150" cy="110" r="75" fill="#ffffff" stroke="#333" stroke-width="4"/>
-
-                        <!-- 耳朵 -->
-                        <!-- 左耳 -->
-                        <path d="M 90 65 Q 80 10 120 45 Z" fill="#ffffff" stroke="#333" stroke-width="3"/>
-                        <path d="M 95 60 Q 88 20 115 48 Z" fill="#ff8a80" />
-                        <!-- 右耳 -->
-                        <path d="M 210 65 Q 220 10 180 45 Z" fill="#ffffff" stroke="#333" stroke-width="3"/>
-                        <path d="M 205 60 Q 212 20 185 48 Z" fill="#ff8a80" />
-
-                        <!-- 脸部五官 -->
-                        <!-- 眼睛 (眯笑) -->
-                        <path d="M 105 100 Q 120 85 135 100" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-                        <path d="M 165 100 Q 180 85 195 100" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-                        <!-- 腮红 -->
-                        <ellipse cx="110" cy="115" rx="10" ry="6" fill="#ff8a80" opacity="0.6"/>
-                        <ellipse cx="190" cy="115" rx="10" ry="6" fill="#ff8a80" opacity="0.6"/>
-                        <!-- 鼻子嘴巴 -->
-                        <polygon points="147,108 153,108 150,113" fill="#ff5252" />
-                        <path d="M 150 113 Q 142 123 135 118" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M 150 113 Q 158 123 165 118" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-                        <!-- 胡须 -->
-                        <line x1="85" y1="105" x2="65" y2="100" stroke="#333" stroke-width="2"/>
-                        <line x1="85" y1="115" x2="65" y2="118" stroke="#333" stroke-width="2"/>
-                        <line x1="215" y1="105" x2="235" y2="100" stroke="#333" stroke-width="2"/>
-                        <line x1="215" y1="115" x2="235" y2="118" stroke="#333" stroke-width="2"/>
-
-                        <!-- 围颈红带与金铃铛 -->
-                        <path d="M 95 145 Q 150 170 205 145 Q 150 155 95 145 Z" fill="#c01920" stroke="#333" stroke-width="2"/>
-                        <circle cx="150" cy="158" r="14" fill="#ffd700" stroke="#b8860b" stroke-width="2"/>
-                        <circle cx="150" cy="162" r="3" fill="#333"/>
-                        <line x1="140" y1="158" x2="160" y2="158" stroke="#b8860b" stroke-width="2"/>
-
-                        <!-- 右手（动态摇爪手） -->
-                        <g class="waving-paw">
-                            <path d="M 190 145 C 220 120 250 60 210 50 C 180 50 175 100 185 135 Z" fill="#ffffff" stroke="#333" stroke-width="4"/>
-                            <!-- 肉垫 -->
-                            <ellipse cx="205" cy="65" rx="10" ry="8" fill="#ff8a80"/>
-                            <circle cx="193" cy="78" r="4" fill="#ff8a80"/>
-                            <circle cx="204" cy="82" r="4" fill="#ff8a80"/>
-                            <circle cx="216" cy="79" r="4" fill="#ff8a80"/>
+                        <!-- 8. 招财右臂 (动态摇爪) -->
+                        <g class="beckoning-paw">
+                            <path d="M 215 175 C 240 150, 245 85, 205 78 C 180 75, 185 115, 195 150 Z" fill="#FFFDF7" stroke="#333333" stroke-width="4.5"/>
+                            <ellipse cx="202" cy="80" rx="20" ry="17" fill="#FFFDF7" stroke="#333333" stroke-width="4"/>
+                            <circle cx="193" cy="82" r="3.5" fill="#FF8080"/>
+                            <circle cx="202" cy="76" r="3.5" fill="#FF8080"/>
+                            <circle cx="211" cy="82" r="3.5" fill="#FF8080"/>
+                            <ellipse cx="202" cy="90" rx="7" ry="5" fill="#FF8080"/>
                         </g>
-                    </g>
-                </svg>
+                    </svg>
+                </div>
             </div>
 
-            <!-- 实时权威黄历广播 -->
-            <div class="calendar-badge-bar" id="todayCalendarBar">
-                数据加载中...
+            <h1 class="text-3xl sm:text-5xl font-cute gold-text tracking-wider mt-1">
+                招财猫纳福 · 动态来财
+            </h1>
+            <p class="text-xs sm:text-sm text-gold-light/90 mt-2 font-serif-sc">
+                权威干支历法 · 竞彩串关计算 · 危险时辰避坑
+            </p>
+        </header>
+
+        <!-- 实时黄历快讯条 -->
+        <div class="gold-border-box rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-gold-light space-y-1" id="calendarBar">
+            <div class="flex flex-wrap justify-between items-center gap-2 border-b border-gold-dark/40 pb-2">
+                <span class="font-bold text-gold-main flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-day"></i> <span id="calDateStr">----.--.--</span>
+                </span>
+                <span class="bg-gold-dark/30 px-2.5 py-0.5 rounded border border-gold-dark/50 text-gold-light" id="calGanzhi">-----</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+                <div><span class="text-gold-light/70">值日星神：</span><span id="calStar" class="font-bold text-white">--</span></div>
+                <div><span class="text-gold-light/70">财神方位：</span><span id="calCaiDir" class="font-bold text-gold-main">--</span></div>
+                <div><span class="text-gold-light/70">喜神方位：</span><span id="calXiDir" class="font-bold text-white">--</span></div>
+                <div><span class="text-gold-light/70">今日冲煞：</span><span id="calClash" class="font-bold text-red-400">--</span></div>
             </div>
         </div>
 
-        <!-- 输入表单 -->
-        <div class="form-card">
-            <div class="section-title">请输入求财测算参数</div>
-            <form id="fortuneForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="investAmt">今日预计投入金额 (元)</label>
-                        <input type="number" id="investAmt" class="form-control" placeholder="例：1000" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="expectAmt">预估回报/目标金额 (元)</label>
-                        <input type="number" id="expectAmt" class="form-control" placeholder="例：5000" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="age">您的年龄</label>
-                        <input type="number" id="age" class="form-control" placeholder="例：28" min="12" max="100" value="28" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="gender">性别</label>
-                        <select id="gender" class="form-control">
-                            <option value="乾造(男)">乾造 (男)</option>
-                            <option value="坤造(女)">坤造 (女)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="zodiac">生肖属相</label>
-                        <select id="zodiac" class="form-control">
-                            <option value="鼠">鼠 (子)</option>
-                            <option value="牛">牛 (丑)</option>
-                            <option value="虎">虎 (寅)</option>
-                            <option value="兔">兔 (卯)</option>
-                            <option value="龙">龙 (辰)</option>
-                            <option value="蛇">蛇 (巳)</option>
-                            <option value="马">马 (午)</option>
-                            <option value="羊">羊 (未)</option>
-                            <option value="猴">猴 (申)</option>
-                            <option value="鸡">鸡 (酉)</option>
-                            <option value="狗">狗 (戌)</option>
-                            <option value="猪">猪 (亥)</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-submit">🌟 招财猫即刻测算运势 🌟</button>
+        <!-- 问财输入卡片 -->
+        <div class="gold-border-box rounded-2xl p-5 sm:p-8 mb-8 relative">
+            <div class="absolute -top-4 left-6 bg-china-red text-gold-main px-4 py-1 rounded-full text-xs sm:text-sm font-bold border border-gold-main flex items-center gap-1.5 shadow-md font-cute">
+                <i class="fa-solid fa-paw"></i> 招财猫问财簿
+            </div>
+
+            <form id="fortuneForm" onsubmit="calculateFortune(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-coins text-gold-main mr-1"></i> 计划投入金额 (元)
+                    </label>
+                    <input type="number" id="inputAmount" min="1" step="any" required placeholder="例如：1000"
+                        class="w-full bg-black/50 border border-gold-dark/60 rounded-lg px-4 py-2.5 text-gold-main font-semibold focus:outline-none focus:border-gold-main focus:ring-1 focus:ring-gold-main placeholder-yellow-900/60">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-sack-dollar text-gold-main mr-1"></i> 预估收益/回报金额 (元)
+                    </label>
+                    <input type="number" id="targetAmount" min="1" step="any" required placeholder="例如：5000"
+                        class="w-full bg-black/50 border border-gold-dark/60 rounded-lg px-4 py-2.5 text-gold-main font-semibold focus:outline-none focus:border-gold-main focus:ring-1 focus:ring-gold-main placeholder-yellow-900/60">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-user-clock text-gold-main mr-1"></i> 您的年龄 (岁)
+                    </label>
+                    <input type="number" id="age" min="12" max="120" value="28" required
+                        class="w-full bg-black/50 border border-gold-dark/60 rounded-lg px-4 py-2.5 text-gold-main font-semibold focus:outline-none focus:border-gold-main focus:ring-1 focus:ring-gold-main">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-venus-mars text-gold-main mr-1"></i> 性别
+                    </label>
+                    <select id="gender" required class="w-full bg-black/80 border border-gold-dark/60 rounded-lg px-4 py-2.5 text-gold-main font-semibold focus:outline-none focus:border-gold-main">
+                        <option value="乾造 (男)">乾造 (男)</option>
+                        <option value="坤造 (女)">坤造 (女)</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs sm:text-sm font-bold text-gold-light mb-1">
+                        <i class="fa-solid fa-paw text-gold-main mr-1"></i> 本命生肖
+                    </label>
+                    <select id="zodiac" required class="w-full bg-black/80 border border-gold-dark/60 rounded-lg px-4 py-2.5 text-gold-main font-semibold focus:outline-none focus:border-gold-main">
+                        <option value="鼠">鼠 (子 · 五行属水)</option>
+                        <option value="牛">牛 (丑 · 五行属土)</option>
+                        <option value="虎">虎 (寅 · 五行属木)</option>
+                        <option value="兔">兔 (卯 · 五行属木)</option>
+                        <option value="龙">龙 (辰 · 五行属土)</option>
+                        <option value="蛇">蛇 (巳 · 五行属火)</option>
+                        <option value="马">马 (午 · 五行属火)</option>
+                        <option value="羊">羊 (未 · 五行属土)</option>
+                        <option value="猴">猴 (申 · 五行属金)</option>
+                        <option value="鸡">鸡 (酉 · 五行属金)</option>
+                        <option value="狗">狗 (戌 · 五行属土)</option>
+                        <option value="猪">猪 (亥 · 五行属水)</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 mt-2">
+                    <button type="submit" id="submitBtn" class="gold-btn w-full py-4 rounded-xl font-bold text-lg sm:text-xl flex items-center justify-center gap-2 tracking-wider font-cute">
+                        <i class="fa-solid fa-cat"></i> 招财猫即刻推算运势与串关
+                    </button>
                 </div>
             </form>
         </div>
 
-        <!-- 结果区域 -->
-        <div class="result-box" id="resultBox">
-            <div class="section-title">招财猫·权威运势解签结论</div>
-
-            <!-- 风险提示牌 -->
-            <div class="risk-banner" id="riskBanner">
-                <!-- 动态充填 -->
+        <!-- 测算动画 -->
+        <div id="loadingBox" class="hidden text-center py-10">
+            <div class="inline-block animate-bounce text-gold-main text-5xl mb-3">
+                <i class="fa-solid fa-cat"></i>
             </div>
-
-            <div class="grid-2">
-                <!-- 今日生肖宜忌 -->
-                <div class="info-card">
-                    <h4><span>☯️ 生肖今日适宜与避开</span><small style="color:var(--gold-light)" id="userZodiacLabel"></small></h4>
-                    <p id="zodiacSuitable" style="color:#a3e635; margin-bottom:6px;"></p>
-                    <p id="zodiacAvoid" style="color:#f87171; margin-bottom:6px;"></p>
-                    <p id="zodiacClash" style="color:#facc15; font-size:12px;"></p>
-                </div>
-
-                <!-- 权威吉位 -->
-                <div class="info-card">
-                    <h4><span>🧭 今日权威财位与风水</span></h4>
-                    <p id="godDirections" style="line-height:1.8;"></p>
-                </div>
-            </div>
-
-            <!-- 三维预测 -->
-            <div class="info-card" style="margin-bottom: 20px;">
-                <h4><span>📈 彩票与股票三维运势预测</span></h4>
-                <div class="prediction-item">
-                    <span>⚽ 竞彩足球运势:</span>
-                    <span id="footballRating" class="stars"></span>
-                </div>
-                <div class="prediction-item">
-                    <span>🏀 竞彩篮球运势:</span>
-                    <span id="basketballRating" class="stars"></span>
-                </div>
-                <div class="prediction-item">
-                    <span>📉 股票/基金操作运势:</span>
-                    <span id="stockRating" class="stars"></span>
-                </div>
-                <div style="margin-top:10px; font-size:12px; color:#ccc;" id="marketStrategy">
-                    <!-- 智能建议 -->
-                </div>
-            </div>
-
-            <!-- 招财祝辞 -->
-            <div class="blessing-box">
-                <div class="blessing-text" id="blessingText"></div>
-                <div style="font-size:12px; color:var(--gold-primary);" id="stampDate"></div>
-            </div>
+            <p class="text-gold-light font-cute text-2xl animate-pulse">招财猫正核算干支、串关容错与避坑时辰...</p>
         </div>
 
-        <div class="footer-info">
-            <p>📅 本系统每日 00:00 自动调用最新权威干支黄历历法数据</p>
-            <p>⚠️ 提示：运势测算仅供休闲娱乐与传统文化参考，理财有风险，投资需谨慎。</p>
+        <!-- 结果显示卡片 -->
+        <div id="resultBox" class="hidden space-y-6">
+
+            <!-- 1. 生肖适宜与避开指引 -->
+            <div class="gold-border-box rounded-2xl p-6 relative overflow-hidden">
+                <div class="flex items-center justify-between border-b border-gold-dark/40 pb-3 mb-4">
+                    <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 font-cute">
+                        <i class="fa-solid fa-bell text-gold-light"></i> 
+                        生肖 [<span id="resZodiac" class="text-white"></span>] 今日宜忌指引
+                    </h3>
+                    <span id="resDateTag" class="text-xs bg-gold-dark/30 text-gold-light px-3 py-1 rounded-full border border-gold-dark/50"></span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-green-950/40 border border-green-700/50 rounded-xl p-4">
+                        <div class="text-green-400 font-bold text-base mb-1.5 flex items-center gap-1.5 font-cute">
+                            <i class="fa-solid fa-circle-check"></i> 猫爪宜做 (今日适宜)
+                        </div>
+                        <p id="resYi" class="text-sm text-gray-200 leading-relaxed"></p>
+                    </div>
+
+                    <div class="bg-red-950/40 border border-red-700/50 rounded-xl p-4">
+                        <div class="text-red-400 font-bold text-base mb-1.5 flex items-center gap-1.5 font-cute">
+                            <i class="fa-solid fa-hand text-red-400"></i> 猫爪避开 (绝对忌讳)
+                        </div>
+                        <p id="resJi" class="text-sm text-gray-200 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 彩票串关推算 & 危险/吉时提醒 (新增核心) -->
+            <div class="gold-border-box rounded-2xl p-6 bg-gradient-to-br from-red-950/90 via-black/80 to-red-950/90">
+                <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                    <i class="fa-solid fa-ticket"></i> 彩票赛果串关算力 & 时辰避坑指南
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- 串关建议 -->
+                    <div class="bg-black/50 p-4 rounded-xl border border-gold-dark/40">
+                        <div class="text-gold-main font-bold text-base mb-2 flex items-center justify-between font-cute">
+                            <span><i class="fa-solid fa-layer-group text-amber-400 mr-1"></i> 今日最佳串关策略</span>
+                            <span id="resChuanTag" class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded border border-amber-500/40"></span>
+                        </div>
+                        <p id="resChuanAdvice" class="text-xs sm:text-sm text-gray-200 leading-relaxed"></p>
+                    </div>
+
+                    <!-- 时辰提醒 -->
+                    <div class="bg-black/50 p-4 rounded-xl border border-gold-dark/40">
+                        <div class="text-gold-main font-bold text-base mb-2 flex items-center gap-1.5 font-cute">
+                            <i class="fa-solid fa-clock text-red-400"></i> 今日关键时辰避坑
+                        </div>
+                        <div class="space-y-2 text-xs sm:text-sm">
+                            <div class="text-red-300 bg-red-950/50 p-2 rounded border border-red-800/40">
+                                <strong>⚠️ 危险时辰 (避坑)：</strong><span id="resBadTime"></span>
+                            </div>
+                            <div class="text-green-300 bg-green-950/50 p-2 rounded border border-green-800/40">
+                                <strong>🌟 招财吉时 (决策)：</strong><span id="resGoodTime"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 大金额投入风险防护评估 -->
+            <div class="gold-border-box rounded-2xl p-6">
+                <h3 class="text-xl font-bold text-gold-main flex items-center gap-2 border-b border-gold-dark/40 pb-3 mb-4 font-cute">
+                    <i class="fa-solid fa-shield-cat"></i> 大金额投入风险评估
+                </h3>
+
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="text-center min-w-[160px]">
+                        <div class="text-xs text-gold-light/70 mb-1">大额投入评级</div>
+                        <div id="resBigInvestTag" class="text-2xl font-black px-4 py-2 rounded-xl inline-block border font-cute"></div>
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <p id="resRiskAnalysis" class="text-sm text-gold-light/90 leading-relaxed"></p>
+                        <div class="bg-black/40 p-3 rounded-lg border border-gold-dark/30 text-xs text-gold-main/90">
+                            <i class="fa-solid fa-circle-exclamation mr-1 text-sm"></i> <strong>招财猫风控建议：</strong><span id="resRiskTip"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 三维专项预测 (足球/篮球/股票) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 足球彩票 -->
+                <div class="gold-border-box rounded-xl p-4 flex flex-col justify-between hover:border-gold-main transition-colors">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-gold-main text-base font-cute"><i class="fa-solid fa-futbol text-green-400 mr-1"></i> 竞彩足球</span>
+                            <span id="footScore" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40"></span>
+                        </div>
+                        <div class="text-xs text-gray-300 space-y-1.5 mt-3">
+                            <div><span class="text-gold-light/70">吉利方位：</span><span id="footDir" class="font-semibold text-white"></span></div>
+                            <div><span class="text-gold-light/70">幸运颜色：</span><span id="footColor" class="font-semibold text-white"></span></div>
+                            <div class="pt-2 border-t border-gold-dark/30 text-gold-light/90" id="footAdvice"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 篮球彩票 -->
+                <div class="gold-border-box rounded-xl p-4 flex flex-col justify-between hover:border-gold-main transition-colors">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-gold-main text-base font-cute"><i class="fa-solid fa-basketball text-orange-400 mr-1"></i> 竞彩篮球</span>
+                            <span id="basketScore" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40"></span>
+                        </div>
+                        <div class="text-xs text-gray-300 space-y-1.5 mt-3">
+                            <div><span class="text-gold-light/70">吉利方位：</span><span id="basketDir" class="font-semibold text-white"></span></div>
+                            <div><span class="text-gold-light/70">幸运颜色：</span><span id="basketColor" class="font-semibold text-white"></span></div>
+                            <div class="pt-2 border-t border-gold-dark/30 text-gold-light/90" id="basketAdvice"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 股票投资 -->
+                <div class="gold-border-box rounded-xl p-4 flex flex-col justify-between hover:border-gold-main transition-colors">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-gold-main text-base font-cute"><i class="fa-solid fa-chart-line text-red-400 mr-1"></i> 股票投资</span>
+                            <span id="stockScore" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40"></span>
+                        </div>
+                        <div class="text-xs text-gray-300 space-y-1.5 mt-3">
+                            <div><span class="text-gold-light/70">吉利板块：</span><span id="stockSector" class="font-semibold text-white"></span></div>
+                            <div><span class="text-gold-light/70">幸运颜色：</span><span id="stockColor" class="font-semibold text-white"></span></div>
+                            <div class="pt-2 border-t border-gold-dark/30 text-gold-light/90" id="stockAdvice"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 招财吉祥结语与印章 -->
+            <div class="gold-border-box rounded-2xl p-6 text-center bg-gradient-to-r from-red-950 via-deep-red to-red-950 relative overflow-hidden">
+                <div class="text-gold-main font-cute text-3xl mb-2 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-stamp"></i> 招财猫赐福印章
+                </div>
+                <p id="resBlessing" class="text-lg sm:text-2xl font-cute text-gold-light py-3 border-y border-gold-main/30 my-3 leading-relaxed">
+                </p>
+                <div class="text-xs text-gold-main/80 font-mono mb-4" id="stampTime"></div>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="reCalculate()" class="px-5 py-2.5 rounded-lg border border-gold-main/60 text-gold-light hover:bg-gold-main/10 text-sm transition-all font-cute">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> 重新测算
+                    </button>
+                    <button onclick="shareFortune()" class="gold-btn px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-1.5 font-cute">
+                        <i class="fa-solid fa-share-nodes"></i> 保存/分享招财福气
+                    </button>
+                </div>
+            </div>
+
         </div>
+
     </div>
 
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-xs text-gold-light/70 space-y-2 border-t border-gold-dark/20 pt-6 px-4">
+        <p>💡 提示：本测算结合传统干支黄历历法与现代概率风控模型，仅供娱乐参考。理财有风险，决策需理性。</p>
+    </footer>
+
+    <!-- JS 算力逻辑 -->
     <script>
-        // 1. 最新权威黄历数据库 (基于权威干支算法)
+        // --- 1. 权威干支黄历数据库 ---
         const LUNAR_DATA = {
-            year: "丙午年 (马)",
+            year: "丙午马年",
             month: "戊戌月",
             day: "丙子日",
-            lunarDate: "九月二十",
-            caiGod: "西南",
-            xiGod: "西南",
-            fuGod: "西北",
+            lunarStr: "九月二十",
+            star: "天牢 (黑道日) · 满执位",
+            caiDir: "西南 (甲卯财位)",
+            xiDir: "西南",
             clash: "冲马 (庚午) 煞南",
-            jiDay: "天牢 (黑道日) / 满执位",
-            yi: "纳采、订盟、开市、交易、立券、安床、会亲友",
-            ji: "入宅、上梁、斋醮、出火、谢土"
+            yi: "纳采、立券、交易、开市、学习理性理财、小额娱乐",
+            ji: "大额跟风、盲目重仓、高杠杆借贷、正南方位开仓"
         };
 
-        // 2. 页面初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            initCalendarHeader();
-            initCoinCanvas();
-
-            // 招财猫点击互动
-            document.getElementById('catHero').addEventListener('click', () => {
-                showToast("🐱 喵~ 招财猫给你招来黄金万两！");
-                triggerCoins(30);
-            });
-
-            // 表单提交
-            document.getElementById('fortuneForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                calculateFortune();
-            });
-        });
-
-        // 渲染顶部广播
-        function initCalendarHeader() {
+        // 初始化顶部黄历快讯
+        function initCalendarBar() {
             const now = new Date();
             const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-            const bar = document.getElementById('todayCalendarBar');
-            bar.innerHTML = `
-                <div><span class="date-tag">📅 今日公历：${dateStr}</span> (${LUNAR_DATA.year} 农历${LUNAR_DATA.lunarDate})</div>
-                <div><b>干支：</b>${LUNAR_DATA.month} ${LUNAR_DATA.day} | <b>值神：</b>${LUNAR_DATA.jiDay}</div>
-                <div><b>财神方位：</b><span style="color:var(--gold-primary)">${LUNAR_DATA.caiGod}方</span> | <b>今日冲煞：</b><span style="color:#ff8a80">${LUNAR_DATA.clash}</span></div>
-            `;
+            document.getElementById('calDateStr').innerText = `${dateStr} (农历${LUNAR_DATA.lunarStr})`;
+            document.getElementById('calGanzhi').innerText = `${LUNAR_DATA.year} ${LUNAR_DATA.month} ${LUNAR_DATA.day}`;
+            document.getElementById('calStar').innerText = LUNAR_DATA.star;
+            document.getElementById('calCaiDir').innerText = LUNAR_DATA.caiDir;
+            document.getElementById('calXiDir').innerText = LUNAR_DATA.xiDir;
+            document.getElementById('calClash').innerText = LUNAR_DATA.clash;
+        }
+        initCalendarBar();
+
+        // --- 2. 金币雨动画 ---
+        const canvas = document.getElementById('coin-canvas');
+        const ctx = canvas.getContext('2d');
+        let coins = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Coin {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = -20;
+                this.size = Math.random() * 14 + 10;
+                this.speedY = Math.random() * 3 + 2.5;
+                this.speedX = Math.random() * 2 - 1;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = Math.random() * 4 - 2;
+                this.opacity = Math.random() * 0.5 + 0.5;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotSpeed;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = this.opacity;
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#B8860B';
+                ctx.stroke();
+
+                ctx.fillStyle = '#8B0000';
+                ctx.fillRect(-this.size/3, -this.size/3, (this.size/3)*2, (this.size/3)*2);
+
+                ctx.restore();
+            }
         }
 
-        // 3. 运势核心测算逻辑
-        function calculateFortune() {
-            const investAmt = parseFloat(document.getElementById('investAmt').value);
-            const expectAmt = parseFloat(document.getElementById('expectAmt').value);
+        function triggerCoins(count = 35) {
+            for (let i = 0; i < count; i++) coins.push(new Coin());
+        }
+
+        function animateCoins() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = coins.length - 1; i >= 0; i--) {
+                coins[i].update();
+                coins[i].draw();
+                if (coins[i].y > canvas.height + 30) coins.splice(i, 1);
+            }
+            requestAnimationFrame(animateCoins);
+        }
+        animateCoins();
+        triggerCoins(20);
+
+        function triggerCatMeow() {
+            const bubble = document.getElementById('catBubble');
+            bubble.classList.remove('hidden');
+            triggerCoins(50);
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } });
+            setTimeout(() => bubble.classList.add('hidden'), 2500);
+        }
+
+        // --- 3. 核心计算引擎 ---
+        const zodiacBase = {
+            "鼠": { element: "水", baseDir: ["正北", "东北"], colors: ["黑", "蓝"], status: "normal" },
+            "牛": { element: "土", baseDir: ["东北", "正南"], colors: ["黄", "红"], status: "lucky" }, // 六合
+            "虎": { element: "木", baseDir: ["正东", "西北"], colors: ["绿", "青"], status: "normal" },
+            "兔": { element: "木", baseDir: ["正东", "西南"], colors: ["浅绿", "粉"], status: "normal" },
+            "龙": { element: "土", baseDir: ["东南", "正西"], colors: ["金", "紫"], status: "lucky" }, // 三合
+            "蛇": { element: "火", baseDir: ["东南", "正南"], colors: ["红", "绿"], status: "normal" },
+            "马": { element: "火", baseDir: ["正南", "西南"], colors: ["赤", "橙"], status: "clash" }, // 正冲 (子午冲)
+            "羊": { element: "土", baseDir: ["西南", "正北"], colors: ["咖啡", "红"], status: "harm" },  // 子未害
+            "猴": { element: "金", baseDir: ["西南", "正西"], colors: ["白", "银"], status: "lucky" }, // 三合
+            "鸡": { element: "金", baseDir: ["正西", "西北"], colors: ["金", "杏"], status: "harm" },  // 子酉破
+            "狗": { element: "土", baseDir: ["西北", "正东"], colors: ["棕", "卡其"], status: "normal" },
+            "猪": { element: "水", baseDir: ["西北", "正北"], colors: ["蓝", "灰"], status: "normal" }
+        };
+
+        function calculateFortune(e) {
+            e.preventDefault();
+
+            const inputAmt = parseFloat(document.getElementById('inputAmount').value);
+            const targetAmt = parseFloat(document.getElementById('targetAmount').value);
             const age = parseInt(document.getElementById('age').value);
             const gender = document.getElementById('gender').value;
             const zodiac = document.getElementById('zodiac').value;
 
-            // 投报比率
-            const ratio = expectAmt / investAmt;
+            document.getElementById('resultBox').classList.add('hidden');
+            document.getElementById('loadingBox').classList.remove('hidden');
+            document.getElementById('loadingBox').scrollIntoView({ behavior: 'smooth' });
 
-            // 结合生肖与丙子日（鼠日）相克关系
-            // 今日丙子，鼠日。子午相冲(马)，子未相害(羊)，子酉相破(鸡)；子丑六合(牛)，申子辰三合(猴,龙)
-            let zodiacStatus = "normal"; // normal, lucky, clash
-            if (zodiac === "马") zodiacStatus = "clash";
-            else if (zodiac === "羊" || zodiac === "鸡") zodiacStatus = "harm";
-            else if (zodiac === "牛" || zodiac === "猴" || zodiac === "龙") zodiacStatus = "lucky";
+            triggerCoins(40);
 
-            // 大额风险评估
-            const isLargeAmount = investAmt >= 3000;
-            const riskBanner = document.getElementById('riskBanner');
-
-            if (zodiacStatus === "clash" && isLargeAmount) {
-                riskBanner.className = "risk-banner risk-danger";
-                riskBanner.innerHTML = `🛑 警告：今日日支冲您的生肖【${zodiac}】，且投入金额较大！强烈不建议大额博彩或高风险投资！建议避开正南方向。`;
-            } else if (isLargeAmount && ratio > 5) {
-                riskBanner.className = "risk-banner risk-warn";
-                riskBanner.innerHTML = `⚠️ 提醒：您预估回报倍数高达 ${ratio.toFixed(1)} 倍！高收益伴随极高风险，今日黑道值日，切忌冲动加码。`;
-            } else if (zodiacStatus === "lucky") {
-                riskBanner.className = "risk-banner risk-safe";
-                riskBanner.innerHTML = `✅ 吉兆：您的生肖【${zodiac}】今日与日柱六合/三合！气运尚佳，小额怡情有望喜纳财源。`;
-            } else {
-                riskBanner.className = "risk-banner risk-warn";
-                riskBanner.innerHTML = `⚖️ 平稳：今日财运指数持平，建议制定严密计划，控制投入额度。`;
-            }
-
-            // 生肖宜忌
-            document.getElementById('userZodiacLabel').innerText = `[${zodiac}肖 · ${gender}]`;
-            const suitableEl = document.getElementById('zodiacSuitable');
-            const avoidEl = document.getElementById('zodiacAvoid');
-            const clashEl = document.getElementById('zodiacClash');
-
-            if (zodiacStatus === "lucky") {
-                suitableEl.innerHTML = `<b>【今日宜】</b> 坐西南求财、看盘选股、小额彩票投注、结交贵人。`;
-                avoidEl.innerHTML = `<b>【今日忌】</b> 借钱给他人、高杠杆合约、往正南方长途出行。`;
-                clashEl.innerHTML = `💡 生肖贵人：属牛、属猴朋友今日可为你带来财气。`;
-            } else if (zodiacStatus === "clash") {
-                suitableEl.innerHTML = `<b>【今日宜】</b> 守财观望、学习理财知识、盘点资产。`;
-                avoidEl.innerHTML = `<b>【今日忌】</b> 大金额盲目跟风、博弈重仓、正南方位开仓。`;
-                clashEl.innerHTML = `⚠️ 冲煞提醒：今日正冲属马者，逢冲宜静不宜动，谨防财气流失。`;
-            } else {
-                suitableEl.innerHTML = `<b>【今日宜】</b> ${LUNAR_DATA.yi}。`;
-                avoidEl.innerHTML = `<b>【今日忌】</b> ${LUNAR_DATA.ji}。`;
-                clashEl.innerHTML = `💡 提示：保持平常心，适宜理性小额尝试。`;
-            }
-
-            // 风水方位
-            document.getElementById('godDirections').innerHTML = `
-                财神位：<b style="color:var(--gold-primary)">${LUNAR_DATA.caiGod}</b> (求财宜坐西南朝东北)<br>
-                喜神位：<b>${LUNAR_DATA.xiGod}</b> | 福神位：<b>${LUNAR_DATA.fuGod}</b><br>
-                幸运色：<span style="color:#ffd700">金色</span>、<span style="color:#ff4500">朱红色</span><br>
-                今日煞方：<span style="color:#ff8a80">${LUNAR_DATA.clash}</span>
-            `;
-
-            // 三维评分
-            let fbStars = zodiacStatus === "lucky" ? 4 : (zodiacStatus === "clash" ? 2 : 3);
-            let bbStars = ratio < 3 ? 4 : 2;
-            let stockStars = isLargeAmount ? 2 : 4;
-
-            document.getElementById('footballRating').innerHTML = "★".repeat(fbStars) + "☆".repeat(5 - fbStars);
-            document.getElementById('basketballRating').innerHTML = "★".repeat(bbStars) + "☆".repeat(5 - bbStars);
-            document.getElementById('stockRating').innerHTML = "★".repeat(stockStars) + "☆".repeat(5 - stockStars);
-
-            document.getElementById('marketStrategy').innerHTML = `
-                📊 <b>招财猫操盘建议：</b> 今日天干丙火、地支子水，水火交叠。竞彩建议关注受让盘口；股市宜关注能源、水利板块，逢高适度减仓，严控风险。
-            `;
-
-            // 赐福吉利话
-            const blessings = [
-                "招财猫双爪摇招，金银财宝堆满堂！祝您今日招财进宝，大吉大利！",
-                "猫爪一摇金山开，财源滚滚入囊来！祝您财运亨通，心想事成！",
-                "日日逢吉时，时时进财宝！招财猫为您守住财库，福气绵绵！"
-            ];
-            const randomBlessing = blessings[Math.floor(Math.random() * blessings.length)];
-            document.getElementById('blessingText').innerText = randomBlessing;
-            document.getElementById('stampDate').innerText = `—— 招财猫印章 · 丙子日印 (已按 ${new Date().toLocaleDateString()} 实时存档)`;
-
-            // 显示结果并喷洒金币
-            document.getElementById('resultBox').style.display = 'block';
-            document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
-            triggerCoins(50);
-            showToast("✨ 招财猫运势已为您精准推算完成！");
-        }
-
-        // 4. 金币雨动画 Canvas
-        function initCoinCanvas() {
-            const canvas = document.getElementById('coinCanvas');
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
-
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-
-            window.coins = [];
-
-            function render() {
-                ctx.clearRect(0, 0, width, height);
-                for (let i = window.coins.length - 1; i >= 0; i--) {
-                    let p = window.coins[i];
-                    p.y += p.vy;
-                    p.x += p.vx;
-                    p.rot += p.vRot;
-
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    ctx.rotate(p.rot);
-                    ctx.fillStyle = '#ffd700';
-                    ctx.strokeStyle = '#b8860b';
-                    ctx.lineWidth = 1.5;
-
-                    ctx.beginPath();
-                    ctx.arc(0, 0, p.r, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // 方孔
-                    ctx.fillStyle = '#5c060a';
-                    ctx.fillRect(-p.r/3, -p.r/3, (p.r*2)/3, (p.r*2)/3);
-
-                    ctx.restore();
-
-                    if (p.y > height + 20) {
-                        window.coins.splice(i, 1);
-                    }
-                }
-                requestAnimationFrame(render);
-            }
-            render();
-        }
-
-        function triggerCoins(count) {
-            const width = window.innerWidth;
-            for (let i = 0; i < count; i++) {
-                window.coins.push({
-                    x: Math.random() * width,
-                    y: -20 - Math.random() * 100,
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: 3 + Math.random() * 4,
-                    r: 8 + Math.random() * 8,
-                    rot: Math.random() * Math.PI,
-                    vRot: (Math.random() - 0.5) * 0.1
-                });
-            }
-        }
-
-        function showToast(text) {
-            const toast = document.getElementById('toast');
-            toast.innerText = text;
-            toast.style.display = 'block';
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2500);
+                document.getElementById('loadingBox').classList.add('hidden');
+                document.getElementById('resultBox').classList.remove('hidden');
+
+                const now = new Date();
+                const zInfo = zodiacBase[zodiac];
+
+                // A. 生肖宜忌
+                document.getElementById('resZodiac').innerText = zodiac;
+                document.getElementById('resDateTag').innerText = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 指引`;
+
+                if (zInfo.status === "clash") {
+                    document.getElementById('resYi').innerText = "适合沉淀观望、复盘资产、学习风控知识、极小额博彩娱乐。";
+                    document.getElementById('resJi').innerText = "⚠️ 正冲之日！严禁大额投注、开仓重仓股票、听信内幕消息，切忌往正南方向。";
+                } else if (zInfo.status === "harm") {
+                    document.getElementById('resYi').innerText = "适合稳扎稳打、分散风险、听取专业分析、小额博彩保本。";
+                    document.getElementById('resJi').innerText = "忌跟风加码、盲目听信网络合买、死磕高倍冷门。";
+                } else if (zInfo.status === "lucky") {
+                    document.getElementById('resYi').innerText = "🌟 三合/六合吉星高照！适宜理性布局、跟进稳健盘口、小试博彩财气。";
+                    document.getElementById('resJi').innerText = "忌贪婪无度、止盈不及时、高倍杠杆加码。";
+                } else {
+                    document.getElementById('resYi').innerText = LUNAR_DATA.yi;
+                    document.getElementById('resJi').innerText = LUNAR_DATA.ji;
+                }
+
+                // B. 串关算力推算 (新增核心)
+                const chuanTag = document.getElementById('resChuanTag');
+                const chuanAdv = document.getElementById('resChuanAdvice');
+
+                if (zInfo.status === "clash" || (targetAmt / inputAmt > 10)) {
+                    chuanTag.innerText = "强烈建议：2串1 / 容错2串3";
+                    chuanAdv.innerHTML = `今日丙子日为黑道值日，且您的预测倍数较高。<strong>严禁选择4串1、5串1等长串！</strong>长串极易在末脚爆冷被穿。建议挑选<strong>1场低让步主胜 + 1场受让盘/大小分</strong>，走稳健的【2串1】或【2串3容错】。`;
+                } else {
+                    chuanTag.innerText = "建议：2串1 或 3串4容错";
+                    chuanAdv.innerHTML = `今日财气较平稳，推荐采用<strong>2串1（双胆）</strong>或<strong>3串4（允许爆冷错一场）</strong>的方案。篮球建议关注让分盘口，足球建议选择双选受让保稳。`;
+                }
+
+                // C. 危险与吉时提醒
+                if (zInfo.status === "clash") {
+                    document.getElementById('resBadTime').innerText = "午时 (11:00 - 13:00) 正冲，切勿下注决策；未时 (13:00 - 15:00) 谨防误导。";
+                    document.getElementById('resGoodTime').innerText = "申时 (15:00 - 17:00) 与 酉时 (17:00 - 19:00) 财神方坐镇。";
+                } else {
+                    document.getElementById('resBadTime').innerText = "午时 (11:00 - 13:00) 阳极相冲，忌冲动大额开仓。";
+                    document.getElementById('resGoodTime').innerText = "辰时 (07:00 - 09:00) 与 酉时 (17:00 - 19:00) 气运最聚。";
+                }
+
+                // D. 大金额投入风险评估
+                const isBig = inputAmt >= 3000;
+                const ratio = targetAmt / inputAmt;
+                const bigTag = document.getElementById('resBigInvestTag');
+
+                if (isBig && zInfo.status === "clash") {
+                    bigTag.className = "text-2xl font-black px-4 py-2 rounded-xl inline-block border font-cute text-red-400 bg-red-950/80 border-red-500/80";
+                    bigTag.innerText = "🛑 严禁大额";
+                    document.getElementById('resRiskAnalysis').innerText = `您计划投入 ${inputAmt} 元，但今日生肖【${zodiac}】逢冲煞，黑道日磁场较紊乱，大额投入爆冷归零风险极高。`;
+                    document.getElementById('resRiskTip').innerText = "今日不建议进行大额重仓或高倍投博彩！宜小额娱乐，保本第一。";
+                } else if (isBig || ratio > 5) {
+                    bigTag.className = "text-2xl font-black px-4 py-2 rounded-xl inline-block border font-cute text-amber-300 bg-amber-950/80 border-amber-500/80";
+                    bigTag.innerText = "⚠️ 谨慎小额";
+                    document.getElementById('resRiskAnalysis').innerText = `您预计投入 ${inputAmt} 元，回报倍数为 ${ratio.toFixed(1)} 倍。高回报意味着极高风险，黑道日易现冷门。`;
+                    document.getElementById('resRiskTip').innerText = "建议分批投入，降低单次下注金额，控制整体风险。";
+                } else {
+                    bigTag.className = "text-2xl font-black px-4 py-2 rounded-xl inline-block border font-cute text-green-400 bg-green-950/80 border-green-500/80";
+                    bigTag.innerText = "✅ 允许小额";
+                    document.getElementById('resRiskAnalysis').innerText = `投入额度 ${inputAmt} 元在合理风控范围内，今日气运平稳。`;
+                    document.getElementById('resRiskTip').innerText = "建议配合 2串1 容错策略，保持理性心态。";
+                }
+
+                // E. 三维专项预测 (足球/篮球/股票)
+                document.getElementById('footScore').innerText = zInfo.status === "lucky" ? "运势指数: 88%" : (zInfo.status === "clash" ? "运势指数: 52%" : "运势指数: 72%");
+                document.getElementById('footDir').innerText = zInfo.baseDir[0];
+                document.getElementById('footColor').innerText = zInfo.colors[0];
+                document.getElementById('footAdvice').innerText = zInfo.status === "clash" ? "建议看好下盘/受让，避开让球方。" : "关注低让步主胜，宜搭配2串1。";
+
+                document.getElementById('basketScore').innerText = ratio < 3 ? "运势指数: 85%" : "运势指数: 65%";
+                document.getElementById('basketDir').innerText = zInfo.baseDir[1] || "西南";
+                document.getElementById('basketColor').innerText = zInfo.colors[1] || "金";
+                document.getElementById('basketAdvice').innerText = "NBA赛事倾向关注让分盘口，防大分爆冷。";
+
+                document.getElementById('stockScore').innerText = isBig ? "运势指数: 60%" : "运势指数: 80%";
+                document.getElementById('stockSector').innerText = zInfo.element === "火" ? "能源 / 科技" : (zInfo.element === "水" ? "水利 / 消费" : "金融 / 制造");
+                document.getElementById('stockColor').innerText = "红 / 金";
+                document.getElementById('stockAdvice').innerText = "逢高可适度减仓，保持现金流，切忌追高。";
+
+                // F. 吉祥好话与印章
+                const blessings = [
+                    `🐱 猫爪摇一摇，招财进宝福星照！祝 ${gender} 今日招财纳福，财源滚滚来！`,
+                    `🐾 招财猫聚财气，金银财宝堆满堂！祝生肖【${zodiac}】今日吉星高照，喜纳八方财！`,
+                    `💰 日日逢吉时，时时进财宝！招财猫为你守住财库，大吉大利！`
+                ];
+                document.getElementById('resBlessing').innerText = blessings[Math.floor(Math.random() * blessings.length)];
+                document.getElementById('stampTime').innerText = `—— 招财猫纳福印章 · ${now.toLocaleDateString()} ${now.toLocaleTimeString()} 实时生成`;
+
+                confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
+                document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+            }, 800);
+        }
+
+        function reCalculate() {
+            document.getElementById('resultBox').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function shareFortune() {
+            const shareText = "🐱 招财猫纳福·来财运势算力：今日吉时财气满满，一起来测算你的专属招财运势吧！";
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText);
+            } else {
+                const input = document.createElement('input');
+                input.value = shareText;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+            }
+            triggerCatMeow();
         }
     </script>
 </body>
