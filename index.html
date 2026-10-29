@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财神爷纳福·动态来财与竞猜目标看板</title>
+    <!-- 引入 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --caishen-red: #d90429;
+            --caishen-dark-red: #800f2f;
+            --gold: #f39c12;
+            --gold-light: #f1c40f;
+            --gold-shine: #ffd700;
+            --bg-color: #fdfaf6;
+            --card-bg: #ffffff;
+            --text-color: #2b2d42;
+            --text-muted: #6c757d;
+            --border-color: #f1e4d3;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* 金币雨画布 */
+        #coinCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* 顶部财神纳福 Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, var(--caishen-dark-red), var(--caishen-red), #b7094c);
+            color: #fff;
+            padding: 24px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(217, 4, 41, 0.25);
+            margin-bottom: 24px;
+            position: relative;
+            border: 2px solid var(--gold-shine);
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--gold-shine);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-badge {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--gold);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #fff;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* 动态财神爷 */
+        .god-of-wealth-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .speech-box {
+            background: #ffffff;
+            color: var(--caishen-dark-red);
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            max-width: 220px;
+            border: 2px solid var(--gold);
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .speech-box::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 6px 0 6px 10px;
+            border-style: solid;
+            border-color: transparent transparent transparent #ffffff;
+        }
+
+        .caishen-svg {
+            width: 95px;
+            height: 95px;
+            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* 目标进度卡片 */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .goal-card {
+            background: linear-gradient(145deg, #ffffff, #fffef9);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            position: relative;
+            overflow: hidden;
+        }
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 6px; height: 100%;
+            background: var(--gold);
+        }
+        .goal-title { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; }
+        .goal-value { font-size: 26px; font-weight: bold; color: var(--caishen-red); margin-bottom: 8px; }
+        .goal-desc { font-size: 13px; color: #555; }
+
+        .progress-bar-bg {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--gold), var(--gold-shine));
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* 核心指标与图表 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .stat-card .val { font-size: 22px; font-weight: bold; margin-top: 4px; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .chart-card h3 { font-size: 16px; margin-bottom: 16px; width: 100%; text-align: left; }
+        .chart-box { position: relative; width: 240px; height: 240px; }
+
+        /* 录入与表格布局 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .form-card, .table-card {
+            background: var(--card-bg);
+            padding: 22px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--caishen-red); }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--caishen-red), #b7094c);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(217, 4, 41, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(217, 4, 41, 0.4); }
+
+        /* 表格样式 */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th, .data-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .data-table th { color: var(--text-muted); background: #fafafa; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .badge-bb { background: #ffe8cc; color: #d9480f; }
+        .badge-fb { background: #d0ebff; color: #1864ab; }
+        .badge-predict { color: #2b8a3e; font-weight: bold; }
+
+        /* 祝贺祝福跑马灯/提示弹框 */
+        .blessing-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #fff3bf, #ffe066);
+            border: 2px solid var(--gold-shine);
+            color: #b7094c;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            font-weight: bold;
+            font-size: 16px;
+            z-index: 1000;
+            display: none;
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 金币雨 Canvas -->
+<canvas id="coinCanvas"></canvas>
+
+<!-- 吉祥祝贺 Toast -->
+<div class="blessing-toast" id="blessingToast"></div>
+
+<div class="container">
+    <!-- Header 财神纳福 -->
+    <header class="header">
+        <div class="header-left">
+            <h1>🧧 财神爷纳福·动态来财</h1>
+            <div class="date-badge" id="currentDateDisplay">📅 加载日期中...</div>
+        </div>
+        <div class="god-of-wealth-wrap">
+            <div class="speech-box" id="caishenSpeech">招财进宝！输入投入，财神赐福！</div>
+            <svg class="caishen-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#fbc531"/>
+                <path d="M 20 35 Q 50 10 80 35 L 85 28 Q 50 0 15 28 Z" fill="#c23616"/>
+                <rect x="10" y="32" width="80" height="8" rx="4" fill="#e1b12c"/>
+                <circle cx="50" cy="50" r="25" fill="#ffeaa7"/>
+                <circle cx="40" cy="48" r="3" fill="#2d3436"/>
+                <circle cx="60" cy="48" r="3" fill="#2d3436"/>
+                <path d="M 42 58 Q 50 65 58 58" stroke="#d63031" stroke-width="2" fill="none"/>
+                <path d="M 35 55 Q 20 65 25 75 Q 38 65 42 58" fill="#2d3436"/>
+                <path d="M 65 55 Q 80 65 75 75 Q 62 65 58 58" fill="#2d3436"/>
+                <path d="M 38 80 Q 50 70 62 80 Q 65 90 35 90 Z" fill="#e1b12c"/>
+                <circle cx="50" cy="78" r="4" fill="#fbc531"/>
+            </svg>
+        </div>
+    </header>
+
+    <!-- 目标跟踪卡片 -->
+    <div class="goals-grid">
+        <div class="goal-card">
+            <div class="goal-title">📈 本月目标（翻一翻）</div>
+            <div class="goal-value" id="monthGoalVal">预估翻倍目标: ¥ 0</div>
+            <div class="goal-desc" id="monthGoalDesc">根据当前累计投入计算翻倍额度</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="monthProgressFill"></div></div>
+        </div>
+        <div class="goal-card">
+            <div class="goal-title">🚀 11月冲击目标</div>
+            <div class="goal-value">冲击目标: ¥ 500</div>
+            <div class="goal-desc">11月竞猜收益/净赚冲击额度：500 元</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 45%;"></div></div>
+        </div>
+    </div>
+
+    <!-- 核心概览指标 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div style="color:var(--text-muted); font-size:13px;">🔥 竞猜总投入</div>
+            <div class="val" id="totalInvestment" style="color:var(--caishen-red);">¥ 0</div>
+        </div>
+        <div class="stat-card">
+            <div style="color:var(--text-muted); font-size:13px;">🎯 预估总中奖金额</div>
+            <div class="val" id="totalPrediction" style="color:#2b8a3e;">¥ 0</div>
+        </div>
+        <div class="stat-card">
+            <div style="color:var(--text-muted); font-size:13px;">🏦 银行借贷/资金池</div>
+            <div class="val" id="totalDebt">¥ 0</div>
+        </div>
+    </div>
+
+    <!-- 独立扇形图 -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>🏀 篮球竞猜投入分布</h3>
+            <div class="chart-box"><canvas id="basketballChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>⚽ 足球竞猜投入分布</h3>
+            <div class="chart-box"><canvas id="footballChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- 录入表单 & 流水明细 -->
+    <div class="main-grid">
+        <div class="form-card">
+            <h3 style="margin-bottom:16px;">🧧 纳福来财·竞猜录入</h3>
+            <form id="betForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label>竞猜项目分类</label>
+                    <select id="sportsCategory" required>
+                        <option value="basketball">🏀 篮球竞猜</option>
+                        <option value="football">⚽ 足球竞猜</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>赛事描述 / 队伍</label>
+                    <input type="text" id="matchTitle" placeholder="如: NBA湖人 vs 勇士" required>
+                </div>
+                <div class="form-group">
+                    <label>投入金额 (元)</label>
+                    <input type="number" id="inputAmount" min="1" step="any" placeholder="请输入投入本金" required>
+                </div>
+                <div class="form-group">
+                    <label>预估中奖金额 (元)</label>
+                    <input type="number" id="predictAmount" min="0" step="any" placeholder="请输入预估可得奖金" required>
+                </div>
+                <div class="form-group">
+                    <label>日期</label>
+                    <input type="date" id="recordDate" required>
+                </div>
+                <button type="submit" class="btn-submit">✨ 确认纳福·来财！</button>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <h3 style="margin-bottom:16px;">📋 竞猜纳福流水记录</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>项目</th>
+                        <th>描述</th>
+                        <th>投入金额</th>
+                        <th>预估中奖</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 吉祥吉祥话列表
+    const blessings = [
+        "🧧 财神送福！祝您一波连红，大吉大利！",
+        "💰 财源滚滚来！预估中奖一路飙升！",
+        "🌟 鸿运当头！篮球足球双双红单！",
+        "🎉 金玉满堂！11月500元目标势在必得！",
+        "✨ 招财进宝！本月目标翻一翻，财气冲天！"
+    ];
+
+    // 全局 JSON 数据对象
+    let pageData = {
+        monthGoalBase: 500,
+        records: [
+            { id: 1, category: "basketball", title: "NBA 湖人胜", amount: 100, predict: 190, date: "2026-10-28" },
+            { id: 2, category: "football", title: "欧冠 皇马独赢", amount: 150, predict: 280, date: "2026-10-29" }
+        ]
+    };
+
+    let bbChart = null;
+    let fbChart = null;
+
+    window.onload = function() {
+        // 设置当前系统日期
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+        document.getElementById('currentDateDisplay').innerText = `📅 ${dateStr}`;
+        document.getElementById('recordDate').valueAsDate = today;
+
+        // 加载本地缓存
+        const local = localStorage.getItem('caishen_bet_data');
+        if(local) {
+            try { pageData = JSON.parse(local); } catch(e){}
+        }
+
+        renderAll();
+    };
+
+    function saveData() {
+        localStorage.setItem('caishen_bet_data', JSON.stringify(pageData));
+    }
+
+    function renderAll() {
+        renderStatsAndGoals();
+        renderCharts();
+        renderTable();
+    }
+
+    // 渲染统计指标与目标
+    function renderStatsAndGoals() {
+        let totalInvest = 0;
+        let totalPredict = 0;
+
+        pageData.records.forEach(r => {
+            totalInvest += Number(r.amount);
+            totalPredict += Number(r.predict);
+        });
+
+        document.getElementById('totalInvestment').innerText = `¥ ${totalInvest.toLocaleString()}`;
+        document.getElementById('totalPrediction').innerText = `¥ ${totalPredict.toLocaleString()}`;
+
+        // 计算本月目标翻一翻 (投入的 2 倍)
+        const doubleTarget = totalInvest * 2;
+        document.getElementById('monthGoalVal').innerText = `翻倍目标: ¥ ${doubleTarget.toLocaleString()}`;
+        document.getElementById('monthGoalDesc').innerText = `当前累计投入 ¥${totalInvest}，翻倍目标额为 ¥${doubleTarget}`;
+        
+        const progressPct = doubleTarget > 0 ? Math.min(100, (totalPredict / doubleTarget) * 100) : 0;
+        document.getElementById('monthProgressFill').style.width = `${progressPct}%`;
+    }
+
+    // 渲染扇形图
+    function renderCharts() {
+        // 篮球
+        const bbData = pageData.records.filter(r => r.category === 'basketball');
+        if(bbChart) bbChart.destroy();
+        bbChart = new Chart(document.getElementById('basketballChart'), {
+            type: 'pie',
+            data: {
+                labels: bbData.length ? bbData.map(r => r.title) : ['无数据'],
+                datasets: [{
+                    data: bbData.length ? bbData.map(r => r.amount) : [1],
+                    backgroundColor: ['#ff922b', '#ffd43b', '#ff8787', '#fcc419', '#ff6b6b']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 足球
+        const fbData = pageData.records.filter(r => r.category === 'football');
+        if(fbChart) fbChart.destroy();
+        fbChart = new Chart(document.getElementById('footballChart'), {
+            type: 'pie',
+            data: {
+                labels: fbData.length ? fbData.map(r => r.title) : ['无数据'],
+                datasets: [{
+                    data: fbData.length ? fbData.map(r => r.amount) : [1],
+                    backgroundColor: ['#339af0', '#74c0fc', '#22b8cf', '#4dabf7', '#15aabf']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // 渲染明细表
+    function renderTable() {
+        const tbody = document.getElementById('recordsTableBody');
+        tbody.innerHTML = '';
+
+        pageData.records.forEach((r, idx) => {
+            const tr = document.createElement('tr');
+            const isBB = r.category === 'basketball';
+            tr.innerHTML = `
+                <td>${r.date}</td>
+                <td><span class="badge ${isBB ? 'badge-bb' : 'badge-fb'}">${isBB ? '🏀 篮球' : '⚽ 足球'}</span></td>
+                <td>${r.title}</td>
+                <td>¥ ${r.amount}</td>
+                <td class="badge-predict">¥ ${r.predict}</td>
+                <td><button onclick="deleteRecord(${idx})" style="color:#d90429; border:none; background:none; cursor:pointer;">删除</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 提交数据并触发纳福好话与金币雨
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        const category = document.getElementById('sportsCategory').value;
+        const title = document.getElementById('matchTitle').value;
+        const amount = parseFloat(document.getElementById('inputAmount').value);
+        const predict = parseFloat(document.getElementById('predictAmount').value);
+        const date = document.getElementById('recordDate').value;
+
+        pageData.records.unshift({
+            id: Date.now(),
+            category, title, amount, predict, date
+        });
+
+        saveData();
+        renderAll();
+
+        // 触发招财好话与动效
+        triggerBlessing();
+        triggerCoinRain();
+
+        // 重置部分输入框
+        document.getElementById('matchTitle').value = '';
+        document.getElementById('inputAmount').value = '';
+        document.getElementById('predictAmount').value = '';
+    }
+
+    function deleteRecord(idx) {
+        pageData.records.splice(idx, 1);
+        saveData();
+        renderAll();
+    }
+
+    // 弹出好话与话语更新
+    function triggerBlessing() {
+        const randomBlessing = blessings[Math.floor(Math.random() * blessings.length)];
+        document.getElementById('caishenSpeech').innerText = randomBlessing;
+
+        const toast = document.getElementById('blessingToast');
+        toast.innerText = randomBlessing;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+
+    // 金币雨动画效果
+    function triggerCoinRain() {
+        const canvas = document.getElementById('coinCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let coins = [];
+        for(let i = 0; i < 40; i++) {
+            coins.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * -canvas.height,
+                vy: Math.random() * 5 + 3,
+                size: Math.random() * 10 + 12
+            });
+        }
+
+        let frame = 0;
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            coins.forEach(c => {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffd700";
+                ctx.fill();
+                ctx.strokeStyle = "#e67e22";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                c.y += c.vy;
+            });
+
+            frame++;
+            if(frame < 120) {
+                requestAnimationFrame(animate);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        animate();
+    }
+</script>
+
+</body>
+</html>
