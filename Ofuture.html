@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>赛事对决动态分析与预测面板</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>赛事对决动态分析 - 主任局推荐版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,6 +16,7 @@
             background-color: #050b14;
             color: #ffffff;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -34,26 +35,31 @@
             pointer-events: none;
         }
 
-        /* 顶部控制栏 */
+        /* 顶部紧凑控制栏（适配手机竖屏） */
         .control-bar {
             position: relative;
             z-index: 10;
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(6, 182, 212, 0.3);
-            padding: 0.8rem 1.5rem;
+            padding: 0.6rem 1rem;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .control-group {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
+            gap: 0.3rem;
+            font-size: 0.75rem;
             color: #22d3ee;
         }
 
@@ -61,27 +67,28 @@
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid #0891b2;
             color: white;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
             outline: none;
             font-weight: bold;
-            width: 110px;
+            width: 75px;
+            font-size: 0.75rem;
         }
 
         .control-group select {
             background: #0f172a;
             border: 1px solid #0891b2;
             color: #22d3ee;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
             outline: none;
-            font-weight: bold;
+            font-size: 0.75rem;
         }
 
         .control-group input[type="color"] {
             border: none;
-            width: 26px;
-            height: 26px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             cursor: pointer;
             background: none;
@@ -91,74 +98,69 @@
             background: linear-gradient(135deg, #06b6d4, #3b82f6);
             color: white;
             border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            width: 100%;
         }
 
-        .btn-start:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.8);
-        }
-
-        /* 主体对决看板 */
+        /* 手机竖屏主体对决看板 */
         .battle-container {
             position: relative;
             z-index: 10;
             flex: 1;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 1.5rem 3rem;
-            gap: 3rem;
+            padding: 1rem;
+            gap: 1rem;
         }
 
         .team-panel {
-            flex: 1;
-            background: rgba(13, 27, 42, 0.65);
+            width: 100%;
+            background: rgba(13, 27, 42, 0.7);
             backdrop-filter: blur(12px);
             border: 2px solid rgba(6, 182, 212, 0.4);
-            border-radius: 20px;
-            padding: 2rem;
+            border-radius: 16px;
+            padding: 1.2rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(6, 182, 212, 0.1);
-            transition: border-color 0.3s;
+            gap: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(6, 182, 212, 0.1);
         }
 
         .team-title {
-            font-size: 2rem;
+            font-size: 1.4rem;
             font-weight: 800;
             text-align: center;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px currentColor;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px currentColor;
         }
 
         /* 属性指标与心电图进度条 */
         .stat-box {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.3rem;
         }
 
         .stat-info {
             display: flex;
             justify-content: space-between;
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #94a3b8;
         }
 
         .stat-bar-bg {
             width: 100%;
-            height: 14px;
+            height: 12px;
             background: rgba(0, 0, 0, 0.6);
-            border-radius: 7px;
+            border-radius: 6px;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
@@ -167,7 +169,7 @@
         .stat-bar-fill {
             height: 100%;
             width: 50%;
-            border-radius: 7px;
+            border-radius: 6px;
             transition: width 0.4s ease-out;
             position: relative;
         }
@@ -186,39 +188,38 @@
             100% { transform: translateX(100%); }
         }
 
-        /* 中间对决与加载动画区 */
+        /* 中间 VS 与加载动画区 */
         .vs-center {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            min-width: 180px;
+            position: relative;
+            height: 40px;
         }
 
         .vs-text {
-            font-size: 3rem;
+            font-size: 1.8rem;
             font-weight: 900;
             font-style: italic;
             background: linear-gradient(135deg, #22d3ee, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
+            text-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
         }
 
         /* 3秒旋转进度加载圈 */
         .loader-wrapper {
-            position: relative;
-            width: 80px;
-            height: 80px;
+            position: absolute;
+            width: 50px;
+            height: 50px;
             display: none;
         }
 
         .spinner {
             width: 100%;
             height: 100%;
-            border: 6px solid rgba(6, 182, 212, 0.2);
-            border-top: 6px solid #22d3ee;
+            border: 4px solid rgba(6, 182, 212, 0.2);
+            border-top: 4px solid #22d3ee;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -228,7 +229,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             font-weight: bold;
             color: #22d3ee;
         }
@@ -241,105 +242,112 @@
         /* 底部状态提示 */
         .status-tip {
             text-align: center;
-            padding-bottom: 1.2rem;
-            font-size: 1rem;
+            padding-bottom: 1rem;
+            font-size: 0.8rem;
             color: #67e8f9;
             z-index: 10;
-            text-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
-            letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(6, 182, 212, 0.4);
         }
     </style>
 </head>
 <body>
 
-    <!-- 青色活力粒子特效背景 -->
+    <!-- 青色粒子动态背景 -->
     <canvas id="particle-canvas"></canvas>
 
-    <!-- 顶部控制与配置栏 -->
+    <!-- 顶部控制面板 -->
     <div class="control-bar">
-        <div class="control-group">
-            <label>主队:</label>
-            <input type="text" id="input-team1" value="皇家马德里" oninput="updateTeamNames()">
-            <input type="color" id="color-team1" value="#3b82f6" onchange="updateTeamColors()">
+        <div class="control-row">
+            <div class="control-group">
+                <label>主:</label>
+                <input type="text" id="input-team1" value="皇马" oninput="updateTeamNames()">
+                <input type="color" id="color-team1" value="#3b82f6" onchange="updateTeamColors()">
+            </div>
+            <div class="control-group">
+                <label>客:</label>
+                <input type="color" id="color-team2" value="#ef4444" onchange="updateTeamColors()">
+                <input type="text" id="input-team2" value="巴萨" oninput="updateTeamNames()">
+            </div>
         </div>
-
-        <div class="control-group">
-            <label>🎯 预设倾向:</label>
-            <select id="prediction-select">
-                <option value="none">✨ 实力均势 / 随机</option>
-                <option value="team1" selected>🔵 主队胜 (优势)</option>
-                <option value="team2">🔴 客队胜 (优势)</option>
-                <option value="draw">🤝 平局僵持</option>
-            </select>
+        <div class="control-row">
+            <div class="control-group">
+                <label>倾向:</label>
+                <select id="prediction-select">
+                    <option value="none">均衡</option>
+                    <option value="team1" selected>主队优势</option>
+                    <option value="team2">客队优势</option>
+                    <option value="draw">势均力敌</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>主任局:</label>
+                <select id="director-recommend">
+                    <option value="recommend" selected>🔥 推荐</option>
+                    <option value="not-recommend">❌ 不推荐</option>
+                </select>
+            </div>
         </div>
-        
-        <button class="btn-start" onclick="startSimulation()">开始模拟对决 (3s)</button>
-
-        <div class="control-group">
-            <label>客队:</label>
-            <input type="color" id="color-team2" value="#ef4444" onchange="updateTeamColors()">
-            <input type="text" id="input-team2" value="巴塞罗那" oninput="updateTeamNames()">
-        </div>
+        <button class="btn-start" onclick="startSimulation()">开始对决模拟 (3s)</button>
     </div>
 
-    <!-- 核心对决看板 -->
+    <!-- 手机竖屏对决看板 -->
     <div class="battle-container">
         
-        <!-- 主队看板 -->
+        <!-- 主队面板 -->
         <div class="team-panel" id="panel-team1" style="border-color: #3b82f6;">
-            <div class="team-title" id="display-team1" style="color: #3b82f6;">皇家马德里</div>
+            <div class="team-title" id="display-team1" style="color: #3b82f6;">皇马</div>
             
             <div class="stat-box">
                 <div class="stat-info">
-                    <span>⚡ 攻击端 (Attack)</span>
+                    <span>⚡ 攻击端</span>
                     <span id="val-atk1">50%</span>
                 </div>
                 <div class="stat-bar-bg">
-                    <div class="stat-bar-fill" id="bar-atk1" style="width: 50%; background: #3b82f6; box-shadow: 0 0 12px #3b82f6;"></div>
+                    <div class="stat-bar-fill" id="bar-atk1" style="width: 50%; background: #3b82f6; box-shadow: 0 0 10px #3b82f6;"></div>
                 </div>
             </div>
 
             <div class="stat-box">
                 <div class="stat-info">
-                    <span>🛡️ 防守端 (Defense)</span>
+                    <span>🛡️ 防守端</span>
                     <span id="val-def1">50%</span>
                 </div>
                 <div class="stat-bar-bg">
-                    <div class="stat-bar-fill" id="bar-def1" style="width: 50%; background: #3b82f6; box-shadow: 0 0 12px #3b82f6;"></div>
+                    <div class="stat-bar-fill" id="bar-def1" style="width: 50%; background: #3b82f6; box-shadow: 0 0 10px #3b82f6;"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 中间对决与转圈加载区 -->
+        <!-- 中间 VS 与加载圈 -->
         <div class="vs-center">
-            <div class="vs-text">VS</div>
+            <div class="vs-text" id="vs-label">VS</div>
             <div class="loader-wrapper" id="loader">
                 <div class="spinner"></div>
                 <div class="loader-text" id="loader-progress">50%</div>
             </div>
         </div>
 
-        <!-- 客队看板 -->
+        <!-- 客队面板 -->
         <div class="team-panel" id="panel-team2" style="border-color: #ef4444;">
-            <div class="team-title" id="display-team2" style="color: #ef4444;">巴塞罗那</div>
+            <div class="team-title" id="display-team2" style="color: #ef4444;">巴萨</div>
             
             <div class="stat-box">
                 <div class="stat-info">
-                    <span>⚡ 攻击端 (Attack)</span>
+                    <span>⚡ 攻击端</span>
                     <span id="val-atk2">50%</span>
                 </div>
                 <div class="stat-bar-bg">
-                    <div class="stat-bar-fill" id="bar-atk2" style="width: 50%; background: #ef4444; box-shadow: 0 0 12px #ef4444;"></div>
+                    <div class="stat-bar-fill" id="bar-atk2" style="width: 50%; background: #ef4444; box-shadow: 0 0 10px #ef4444;"></div>
                 </div>
             </div>
 
             <div class="stat-box">
                 <div class="stat-info">
-                    <span>🛡️ 防守端 (Defense)</span>
+                    <span>🛡️ 防守端</span>
                     <span id="val-def2">50%</span>
                 </div>
                 <div class="stat-bar-bg">
-                    <div class="stat-bar-fill" id="bar-def2" style="width: 50%; background: #ef4444; box-shadow: 0 0 12px #ef4444;"></div>
+                    <div class="stat-bar-fill" id="bar-def2" style="width: 50%; background: #ef4444; box-shadow: 0 0 10px #ef4444;"></div>
                 </div>
             </div>
         </div>
@@ -347,10 +355,10 @@
     </div>
 
     <!-- 底部状态说明 -->
-    <div class="status-tip" id="status-tip">请选择预期胜负倾向，点击上方按钮开始录制对决演示</div>
+    <div class="status-tip" id="status-tip">录屏准备就绪，点击上方按钮开始</div>
 
     <script>
-        /* --- 1. 青色活力粒子动态背景特效 --- */
+        /* --- 1. 青色粒子动态背景 --- */
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         
@@ -362,15 +370,15 @@
         resizeCanvas();
 
         const particles = [];
-        const particleCount = 70;
+        const particleCount = 45;
 
         for (let i = 0; i < particleCount; i++) {
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 1.5,
-                vy: (Math.random() - 0.5) * 1.5,
-                radius: Math.random() * 2.5 + 1,
+                vx: (Math.random() - 0.5) * 1.2,
+                vy: (Math.random() - 0.5) * 1.2,
+                radius: Math.random() * 2 + 1,
                 alpha: Math.random() * 0.7 + 0.3
             });
         }
@@ -389,19 +397,19 @@
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 8;
                 ctx.shadowColor = '#22d3ee';
                 ctx.fill();
 
                 for (let j = i + 1; j < particles.length; j++) {
                     let p2 = particles[j];
                     let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 120) {
+                    if (dist < 90) {
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(34, 211, 238, ${0.15 * (1 - dist / 120)})`;
-                        ctx.lineWidth = 0.8;
+                        ctx.strokeStyle = `rgba(34, 211, 238, ${0.15 * (1 - dist / 90)})`;
+                        ctx.lineWidth = 0.6;
                         ctx.stroke();
                     }
                 }
@@ -410,7 +418,7 @@
         }
         animateParticles();
 
-        /* --- 2. 交互逻辑与预设倾向控制 --- */
+        /* --- 2. 交互与 3 秒心电图动画 --- */
         function updateTeamNames() {
             document.getElementById('display-team1').textContent = document.getElementById('input-team1').value;
             document.getElementById('display-team2').textContent = document.getElementById('input-team2').value;
@@ -423,76 +431,74 @@
             document.getElementById('panel-team1').style.borderColor = color1;
             document.getElementById('display-team1').style.color = color1;
             document.getElementById('bar-atk1').style.background = color1;
-            document.getElementById('bar-atk1').style.boxShadow = `0 0 12px ${color1}`;
+            document.getElementById('bar-atk1').style.boxShadow = `0 0 10px ${color1}`;
             document.getElementById('bar-def1').style.background = color1;
-            document.getElementById('bar-def1').style.boxShadow = `0 0 12px ${color1}`;
+            document.getElementById('bar-def1').style.boxShadow = `0 0 10px ${color1}`;
 
             document.getElementById('panel-team2').style.borderColor = color2;
             document.getElementById('display-team2').style.color = color2;
             document.getElementById('bar-atk2').style.background = color2;
-            document.getElementById('bar-atk2').style.boxShadow = `0 0 12px ${color2}`;
+            document.getElementById('bar-atk2').style.boxShadow = `0 0 10px ${color2}`;
             document.getElementById('bar-def2').style.background = color2;
-            document.getElementById('bar-def2').style.boxShadow = `0 0 12px ${color2}`;
+            document.getElementById('bar-def2').style.boxShadow = `0 0 10px ${color2}`;
         }
 
         function startSimulation() {
             const loader = document.getElementById('loader');
+            const vsLabel = document.getElementById('vs-label');
             const loaderProgress = document.getElementById('loader-progress');
             const statusTip = document.getElementById('status-tip');
+            
             const prediction = document.getElementById('prediction-select').value;
+            const directorRec = document.getElementById('director-recommend').value;
             const team1Name = document.getElementById('input-team1').value;
             const team2Name = document.getElementById('input-team2').value;
             
             loader.style.display = 'block';
-            statusTip.textContent = "AI 数据引擎正在根据预设倾向进行心电图动态推演...";
+            vsLabel.style.opacity = '0';
+            statusTip.textContent = "AI 正在生成心电图跳动波形...";
 
             let startTime = performance.now();
-            let duration = 3000; // 3 秒钟
+            let duration = 3000;
 
-            // 根据事前选择的胜负倾向设定目标分值范围 (50% - 100%)
             let targetAtk1, targetDef1, targetAtk2, targetDef2;
 
             if (prediction === 'team1') {
-                targetAtk1 = Math.floor(Math.random() * 16) + 82; // 主队高 (82-97)
-                targetDef1 = Math.floor(Math.random() * 16) + 80;
-                targetAtk2 = Math.floor(Math.random() * 21) + 55; // 客队低 (55-75)
-                targetDef2 = Math.floor(Math.random() * 21) + 55;
+                targetAtk1 = Math.floor(Math.random() * 15) + 82;
+                targetDef1 = Math.floor(Math.random() * 15) + 80;
+                targetAtk2 = Math.floor(Math.random() * 20) + 55;
+                targetDef2 = Math.floor(Math.random() * 20) + 55;
             } else if (prediction === 'team2') {
-                targetAtk1 = Math.floor(Math.random() * 21) + 55; // 主队低
-                targetDef1 = Math.floor(Math.random() * 21) + 55;
-                targetAtk2 = Math.floor(Math.random() * 16) + 82; // 客队高 (82-97)
-                targetDef2 = Math.floor(Math.random() * 16) + 80;
+                targetAtk1 = Math.floor(Math.random() * 20) + 55;
+                targetDef1 = Math.floor(Math.random() * 20) + 55;
+                targetAtk2 = Math.floor(Math.random() * 15) + 82;
+                targetDef2 = Math.floor(Math.random() * 15) + 80;
             } else if (prediction === 'draw') {
                 let baseDraw = Math.floor(Math.random() * 15) + 70;
-                targetAtk1 = baseDraw;
-                targetDef1 = baseDraw;
-                targetAtk2 = baseDraw;
-                targetDef2 = baseDraw;
+                targetAtk1 = baseDraw; targetDef1 = baseDraw;
+                targetAtk2 = baseDraw; targetDef2 = baseDraw;
             } else {
-                targetAtk1 = Math.floor(Math.random() * 41) + 60;
-                targetDef1 = Math.floor(Math.random() * 41) + 60;
-                targetAtk2 = Math.floor(Math.random() * 41) + 60;
-                targetDef2 = Math.floor(Math.random() * 41) + 60;
+                targetAtk1 = Math.floor(Math.random() * 40) + 60;
+                targetDef1 = Math.floor(Math.random() * 40) + 60;
+                targetAtk2 = Math.floor(Math.random() * 40) + 60;
+                targetDef2 = Math.floor(Math.random() * 40) + 60;
             }
 
             function updateAnimation(currentTime) {
                 let elapsed = currentTime - startTime;
                 let progress = Math.min(elapsed / duration, 1);
                 
-                // 进度条从 50% 到 100%
                 let currentVal = Math.floor(50 + progress * 50);
                 loaderProgress.textContent = currentVal + '%';
 
-                // 心电图动态剧烈跳动感（模拟比赛战局瞬息万变）
-                let wave1 = Math.sin(progress * Math.PI * 5) * 12;
-                let wave2 = Math.cos(progress * Math.PI * 5) * 12;
+                let wave1 = Math.sin(progress * Math.PI * 5) * 10;
+                let wave2 = Math.cos(progress * Math.PI * 5) * 10;
 
                 let curAtk1 = Math.min(100, Math.max(30, Math.floor(50 + (targetAtk1 - 50) * progress + wave1)));
                 let curDef1 = Math.min(100, Math.max(30, Math.floor(50 + (targetDef1 - 50) * progress - wave1)));
                 let curAtk2 = Math.min(100, Math.max(30, Math.floor(50 + (targetAtk2 - 50) * progress + wave2)));
                 let curDef2 = Math.min(100, Math.max(30, Math.floor(50 + (targetDef2 - 50) * progress - wave2)));
 
-                // 实时渲染主客队攻防
                 document.getElementById('bar-atk1').style.width = curAtk1 + '%';
                 document.getElementById('val-atk1').textContent = curAtk1 + '%';
                 document.getElementById('bar-def1').style.width = curDef1 + '%';
@@ -507,12 +513,17 @@
                     requestAnimationFrame(updateAnimation);
                 } else {
                     loader.style.display = 'none';
-                    let resultMsg = "✨ 模拟对决完成！";
-                    if (prediction === 'team1') resultMsg = `🏆 预测结果：${team1Name} 占据绝对优势取胜！`;
-                    else if (prediction === 'team2') resultMsg = `🏆 预测结果：${team2Name} 成功反客为主！`;
-                    else if (prediction === 'draw') resultMsg = `🤝 预测结果：双方势均力敌，握手言和！`;
+                    vsLabel.style.opacity = '1';
                     
-                    statusTip.textContent = resultMsg;
+                    // 最终合成显示结果与主任局推荐
+                    let recText = (directorRec === 'recommend') ? "🔥 【主任局推荐：推荐】" : "❌ 【主任局推荐：不推荐】";
+                    let matchResult = "";
+                    if (prediction === 'team1') matchResult = `${team1Name} 优势胜出！`;
+                    else if (prediction === 'team2') matchResult = `${team2Name} 逆袭取胜！`;
+                    else if (prediction === 'draw') matchResult = `双方势均力敌握手言和！`;
+                    else matchResult = `模拟分析完成！`;
+
+                    statusTip.textContent = `${recText} | ${matchResult}`;
                 }
             }
 
