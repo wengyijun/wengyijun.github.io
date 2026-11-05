@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智慧停车场物联网综合解决方案</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #050b14;
+            color: #ffffff;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        /* 动态青色粒子背景 */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 页面大标题 */
+        .header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 1.2rem 1rem 0.6rem;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.2);
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            color: #22d3ee;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+
+        .header p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.2rem;
+        }
+
+        /* 主体内容容器 */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1000px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: rgba(13, 27, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(6, 182, 212, 0.35);
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.4rem;
+        }
+
+        /* 一、技术原理 2x2 网格 */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .tech-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-left: 3px solid #06b6d4;
+            border-radius: 6px;
+            padding: 0.8rem;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .tech-box h4 {
+            color: #22d3ee;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+        }
+
+        .tech-box ul {
+            padding-left: 1.2rem;
+            color: #cbd5e1;
+        }
+
+        /* 拓扑流程图展示 */
+        .architecture-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 0;
+        }
+
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .node {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #0891b2;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: #22d3ee;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
+
+        .arrow {
+            color: #f59e0b;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        /* 模拟控制台面板：车位与车牌识别 */
+        .demo-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .demo-box {
+            flex: 1;
+            min-width: 260px;
+            background: rgba(11, 19, 36, 0.85);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 10px;
+            padding: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        /* 车位可视化九宫格 */
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.4rem;
+        }
+
+        .spot {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            border-radius: 6px;
+            padding: 0.4rem 0.2rem;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .spot.occupied {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        /* 车牌识别模拟卡片 */
+        .lpr-monitor {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .license-plate {
+            display: inline-block;
+            background: #0284c7;
+            color: #ffffff;
+            border: 1.5px solid #ffffff;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1rem;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(2, 132, 199, 0.6);
+        }
+
+        .timestamp {
+            color: #f59e0b;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        /* 三、方案优势 */
+        .advantages-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .adv-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            padding: 0.8rem;
+        }
+
+        .adv-card h5 {
+            color: #fbbf24;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .adv-card p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        /* 按钮与交互控制 */
+        .btn-simulate {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+            width: 100%;
+            margin-top: 0.3rem;
+        }
+
+        .btn-simulate:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景粒子 -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- 顶部标题 -->
+    <div class="header">
+        <h1>🅿️ 智慧停车场物联网综合解决方案</h1>
+        <p>IoT Sensors & AI License Plate Recognition System</p>
+    </div>
+
+    <!-- 主体架构内容 -->
+    <div class="container">
+
+        <!-- 一、核心技术原理 -->
+        <div class="card">
+            <div class="card-title">🔬 一、 核心技术实现原理</div>
+            <div class="grid-2">
+                <div class="tech-box">
+                    <h4>1. 车位剩余位置统计（车位检测技术）</h4>
+                    <ul>
+                        <li><b>超声波探测技术：</b>安装在室内车位天花板，通过发射超声波并接收回波来判断下方是否有车。</li>
+                        <li><b>地磁感应 + 视频复合检测：</b>地面埋设地磁传感器检测磁场变化，或高位 AI 视频相机识别车位空满。</li>
+                        <li><b>通信传输：</b>通过 NB-IoT、LoRa、ZigBee 或 RS-485 总线发送给网关，汇聚至服务器。</li>
+                    </ul>
+                </div>
+
+                <div class="tech-box">
+                    <h4>2. 出入口车牌识别与时间抓拍</h4>
+                    <ul>
+                        <li><b>车牌识别（LPR）：</b>高清一体机（含摄像机、补光灯、AI芯片），采用深度学习 CNN 网络进行定位、字符分割与识别。</li>
+                        <li><b>精确时间戳记录：</b>硬件 RTC 时钟在车辆通过瞬间生成精准到秒的 Unix 时间戳，绑定车牌形成进出记录。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时模拟示范面板 -->
+        <div class="card">
+            <div class="card-title">🖥️ 演示看板：车位感应 & 车牌抓拍实时模拟</div>
+            <div class="demo-panel">
+                <!-- 左：车位感应可视化 -->
+                <div class="demo-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                        <span style="color:#22d3ee; font-weight:bold;">地下车库感应器模拟</span>
+                        <span style="color:#67e8f9;">剩余车位: <b id="empty-count" style="color:#22c55e; font-size:1rem;">5</b> / 8</span>
+                    </div>
+                    <div class="parking-grid" id="parking-grid">
+                        <div class="spot occupied">01 有车</div>
+                        <div class="spot">02 空闲</div>
+                        <div class="spot occupied">03 有车</div>
+                        <div class="spot">04 空闲</div>
+                        <div class="spot">05 空闲</div>
+                        <div class="spot occupied">06 有车</div>
+                        <div class="spot">07 空闲</div>
+                        <div class="spot">08 空闲</div>
+                    </div>
+                    <button class="btn-simulate" onclick="simulateParkingChange()">🔄 模拟车辆进出车位</button>
+                </div>
+
+                <!-- 右：出入口抓拍模拟 -->
+                <div class="demo-box">
+                    <div style="color:#22d3ee; font-weight:bold; font-size:0.8rem;">出口 AI 车牌抓拍识别监控</div>
+                    <div class="lpr-monitor">
+                        <div>最新识别车牌：<span class="license-plate" id="lpr-plate">粤B·88888</span></div>
+                        <div>抓拍精确时间：<span class="timestamp" id="lpr-time">2026-11-05 12:50:22</span></div>
+                        <div>通行状态：<span style="color:#22c55e; font-weight:bold;" id="lpr-status">月租车 - 自动抬杆放行</span></div>
+                    </div>
+                    <button class="btn-simulate" onclick="simulateLPRCapture()">📸 模拟出口车辆识别抓拍</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 二、智慧停车场综合解决方案 -->
+        <div class="card">
+            <div class="card-title">🏗️ 二、 智慧停车场综合解决方案</div>
+            
+            <!-- 1. 系统架构图 -->
+            <div style="font-size:0.8rem; font-weight:bold; color:#22d3ee; margin-bottom:0.5rem;">1. 系统拓扑架构设计</div>
+            <div class="architecture-flow">
+                <div class="flow-row">
+                    <div class="node">车位感应器<br><small style="color:#94a3b8;">超声波/地磁</small></div>
+                    <div class="arrow">--(LoRa/RS485)--></div>
+                    <div class="node">区域网关</div>
+                    <div class="arrow">--+</div>
+                </div>
+                <div class="flow-row">
+                    <div class="node">出入口抓拍相机<br><small style="color:#94a3b8;">嵌入式AI识别</small></div>
+                    <div class="arrow">--(以太网 TCP/IP)--></div>
+                    <div class="node" style="border-color:#f59e0b; color:#fbbf24;">本地 / 云端服务器<br><small style="color:#cbd5e1;">停车场管理系统</small></div>
+                    <div class="arrow">---></div>
+                    <div class="node" style="border-color:#22c55e; color:#4ade80;">业主APP / 物业大屏<br>车位引导屏</div>
+                </div>
+            </div>
+
+            <!-- 2. 硬件 & 软件逻辑 -->
+            <div class="grid-2" style="margin-top: 1rem;">
+                <div class="tech-box">
+                    <h4>2. 硬件配置与网络传输</h4>
+                    <ul>
+                        <li><b>感知层：</b>超声波探测器、地磁、高位视频相机、出入口抓拍一体机（含补光灯、语音屏、道闸）。</li>
+                        <li><b>传输层：</b>工业级交换机、无线 LoRa 网关、光纤/网线。</li>
+                        <li><b>服务端：</b>部署于物业中心本地服务器或阿里云/腾讯云。</li>
+                    </ul>
+                </div>
+
+                <div class="tech-box">
+                    <h4>3. 软件功能与校验逻辑</h4>
+                    <ul>
+                        <li><b>车位动态统计：</b>初始化总车位（如 500 个），感应器由无到有则 `-1`，反之 `+1`。</li>
+                        <li><b>双重校验机制：</b>结合出入口识别数据校准，防止个别传感器误报。</li>
+                        <li><b>出入口记录：</b>触发抓拍 $\to$ CNN 识别 $\to$ 记录精确时间 $\to$ 判定月租/缴费 $\to$ 抬杆。所有记录实时入库。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 4. 用户及物业端展示 -->
+            <div class="tech-box" style="margin-top: 0.8rem;">
+                <h4>4. 用户及物业端多终端展示</h4>
+                <ul>
+                    <li><b>小区/车库引导屏：</b>LED 户外条屏实时显示“剩余车位：128”。</li>
+                    <li><b>物业监控大屏：</b>Web 可视化大屏展现 2D/3D 车库平面图（红灯占用/绿灯空闲），实时滚动进出车牌与收益。</li>
+                    <li><b>业主端小程序/APP：</b>业主出行前可手机实时查看剩余车位，提高停车效率。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 三、 方案实施优势 -->
+        <div class="card">
+            <div class="card-title">⭐ 三、 方案实施优势</div>
+            <div class="advantages-list">
+                <div class="adv-card">
+                    <h5>🤖 1. 自动化、无人化</h5>
+                    <p>无需人工值守与手动统计车位，极大程度节省物业管理与巡查成本。</p>
+                </div>
+                <div class="adv-card">
+                    <h5>⚡ 2. 精准高效</h5>
+                    <p>车牌识别率高达 98% 以上，进出抓拍时间精确到秒，杜绝人工漏记与管理漏洞。</p>
+                </div>
+                <div class="adv-card">
+                    <h5>🚀 3. 扩展性强</h5>
+                    <p>后期可无缝接入微信/支付宝线上缴费、电子发票、无感支付及新能源充电桩管理。</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* 背景青色粒子 */
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const particles = [];
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2,
+                radius: Math.random() * 2 + 1, alpha: Math.random() * 0.7 + 0.3
+            });
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i]; p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`; ctx.fill();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        /* 车位变动模拟 */
+        function simulateParkingChange() {
+            const spots = document.querySelectorAll('.spot');
+            let randomSpot = spots[Math.floor(Math.random() * spots.length)];
+            
+            if (randomSpot.classList.contains('occupied')) {
+                randomSpot.classList.remove('occupied');
+                randomSpot.textContent = randomSpot.textContent.replace('有车', '空闲');
+            } else {
+                randomSpot.classList.add('occupied');
+                randomSpot.textContent = randomSpot.textContent.replace('空闲', '有车');
+            }
+
+            // 更新剩余车位数
+            const emptyCount = document.querySelectorAll('.spot:not(.occupied)').length;
+            document.getElementById('empty-count').textContent = emptyCount;
+        }
+
+        /* 出口识别模拟 */
+        const mockPlates = ['粤B·88888', '粤B·66666', '粤B·12345', '粤B·99999', '粤B·52013'];
+        function simulateLPRCapture() {
+            const plate = mockPlates[Math.floor(Math.random() * mockPlates.length)];
+            const now = new Date();
+            const timeStr = now.getFullYear() + '-' + 
+                String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(now.getDate()).padStart(2, '0') + ' ' + 
+                String(now.getHours()).padStart(2, '0') + ':' + 
+                String(now.getMinutes()).padStart(2, '0') + ':' + 
+                String(now.getSeconds()).padStart(2, '0');
+
+            document.getElementById('lpr-plate').textContent = plate;
+            document.getElementById('lpr-time').textContent = timeStr;
+        }
+    </script>
+</body>
+</html>
