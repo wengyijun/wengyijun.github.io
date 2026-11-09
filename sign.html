@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业电子印章在线生成器</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#e60012',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 常用标准印章中文字体定义 */
+        @font-face {
+            font-family: 'SimSun';
+            src: local('SimSun'), local('Songti SC'), local('STSong');
+        }
+        @font-face {
+            font-family: 'KaiTi';
+            src: local('KaiTi'), local('Kaiti SC'), local('STKaiti');
+        }
+        @font-face {
+            font-family: 'SimHei';
+            src: local('SimHei'), local('Heiti SC'), local('STHeiti');
+        }
+        @font-face {
+            font-family: 'FangSong';
+            src: local('FangSong'), local('Fangsong SC'), local('STFangsong');
+        }
+
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+        /* 透明棋盘网格背景 */
+        .checkerboard-bg {
+            background-color: #f8fafc;
+            background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2e8f0 75%), linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .dark .checkerboard-bg {
+            background-color: #0f172a;
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+
+    <!-- 顶栏 Header -->
+    <header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur shrink-0 px-4 md:px-8 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-red-500/30">
+                <i class="fa-solid font-serif">章</i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-none">专业电子印章在线生成器</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">向量绘图 · 真实质感做旧 · 解决字体丢失 · 高清导出</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- 预设选择 -->
+            <select id="presetSelect" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm rounded-lg px-2 sm:px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-500">
+                <option value="company_round">标准公司公章 (圆形)</option>
+                <option value="finance_oval">财务专用章 (椭圆)</option>
+                <option value="contract_square">合同专用章 (方形)</option>
+                <option value="personal_rect">个人名章 (长方形)</option>
+                <option value="party_round">党组织专用章 (圆形)</option>
+            </select>
+
+            <button id="resetBtn" title="重置参数" class="p-2 text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button id="themeToggle" title="切换主题" class="p-2 text-slate-600 hover:text-amber-500 dark:text-slate-300 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:block"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+
+        <!-- 左侧参数控制面板 -->
+        <aside class="w-full md:w-[420px] lg:w-[460px] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 h-1/2 md:h-full z-10">
+            <!-- Tab 导航 -->
+            <div class="flex border-b border-slate-200 dark:border-slate-800 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-1 overflow-x-auto">
+                <button class="tab-btn active px-3 py-2 rounded-md flex-1 text-center whitespace-nowrap transition font-bold border-b-2 border-red-600 text-red-600" data-tab="tab-shape"><i class="fa-solid fa-shapes mr-1"></i>形状规格</button>
+                <button class="tab-btn px-3 py-2 rounded-md flex-1 text-center whitespace-nowrap transition" data-tab="tab-maintext"><i class="fa-solid fa-font mr-1"></i>文字排版</button>
+                <button class="tab-btn px-3 py-2 rounded-md flex-1 text-center whitespace-nowrap transition" data-tab="tab-center"><i class="fa-solid fa-star mr-1"></i>中心图案</button>
+                <button class="tab-btn px-3 py-2 rounded-md flex-1 text-center whitespace-nowrap transition" data-tab="tab-subtext"><i class="fa-solid fa-signature mr-1"></i>副标题/编号</button>
+                <button class="tab-btn px-3 py-2 rounded-md flex-1 text-center whitespace-nowrap transition" data-tab="tab-effect"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>做旧质感</button>
+            </div>
+
+            <!-- Tab 内容区 -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+
+                <!-- TAB 1: 形状规格 -->
+                <div id="tab-shape" class="tab-content space-y-4">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-2">印章形状与颜色</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5">印章形状</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button type="button" class="shape-btn active p-2 text-xs border rounded-lg border-red-500 bg-red-50 dark:bg-red-950/30 text-red-600 font-medium flex flex-col items-center" data-shape="circle">
+                                <i class="fa-regular fa-circle text-lg mb-1"></i>圆形
+                            </button>
+                            <button type="button" class="shape-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-shape="ellipse">
+                                <i class="fa-solid fa-egg text-lg mb-1"></i>椭圆
+                            </button>
+                            <button type="button" class="shape-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-shape="square">
+                                <i class="fa-regular fa-square text-lg mb-1"></i>正方形
+                            </button>
+                            <button type="button" class="shape-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-shape="rectangle">
+                                <i class="fa-solid fa-vector-square text-lg mb-1"></i>长方形
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 调色板 -->
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5">印章颜色</label>
+                        <div class="flex items-center space-x-2">
+                            <button type="button" class="color-preset w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 ring-2 ring-red-500 bg-[#e60012]" data-color="#e60012"></button>
+                            <button type="button" class="color-preset w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 hover:ring-2 ring-blue-500 bg-[#004bb0]" data-color="#004bb0"></button>
+                            <button type="button" class="color-preset w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 hover:ring-2 ring-green-500 bg-[#008a3b]" data-color="#008a3b"></button>
+                            <button type="button" class="color-preset w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 hover:ring-2 ring-slate-800 bg-[#1e293b]" data-color="#1e293b"></button>
+                            <div class="flex-1 flex items-center bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700">
+                                <input type="color" id="primaryColor" value="#e60012" class="w-6 h-6 border-0 bg-transparent cursor-pointer">
+                                <input type="text" id="primaryColorHex" value="#e60012" class="w-full text-xs bg-transparent border-0 ml-2 uppercase font-mono focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 尺寸滑块 -->
+                    <div class="space-y-3 pt-2">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>印章宽度/半径 (px)</span>
+                                <span id="val-sealWidth" class="font-mono text-slate-500">300</span>
+                            </div>
+                            <input type="range" id="sealWidth" min="150" max="450" value="300" class="w-full accent-red-600">
+                        </div>
+                        <div id="heightControlContainer" class="hidden">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>印章高度 (px) (椭圆/长方形)</span>
+                                <span id="val-sealHeight" class="font-mono text-slate-500">200</span>
+                            </div>
+                            <input type="range" id="sealHeight" min="100" max="450" value="200" class="w-full accent-red-600">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>外框线条粗细 (px)</span>
+                                <span id="val-borderWidth" class="font-mono text-slate-500">10</span>
+                            </div>
+                            <input type="range" id="borderWidth" min="1" max="25" value="10" class="w-full accent-red-600">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>内边框 / 双线内圈距离 (px)</span>
+                                <span id="val-innerBorderOffset" class="font-mono text-slate-500">0</span>
+                            </div>
+                            <input type="range" id="innerBorderOffset" min="0" max="30" value="0" class="w-full accent-red-600">
+                            <p class="text-[10px] text-slate-400 mt-0.5">>0 时自动开启双圈内线效果</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: 主标题文字 -->
+                <div id="tab-maintext" class="tab-content space-y-4 hidden">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-2">主标题 (环形/横排文字)</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5">主单位名称/文本</label>
+                        <input type="text" id="mainText" value="深圳市某某科技有限公司" placeholder="输入单位全称" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1.5">字体选择</label>
+                            <select id="mainFont" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-red-500">
+                                <option value="SimSun" selected>宋体 (SimSun)</option>
+                                <option value="KaiTi">楷体 (KaiTi)</option>
+                                <option value="SimHei">黑体 (SimHei)</option>
+                                <option value="FangSong">仿宋 (FangSong)</option>
+                                <option value="Microsoft YaHei">微软雅黑</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1.5">文字字重</label>
+                            <select id="mainFontWeight" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-red-500">
+                                <option value="bold" selected>加粗 Bold</option>
+                                <option value="normal">正常 Normal</option>
+                                <option value="900">特粗 Heavy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>文字大小 (px)</span>
+                                <span id="val-mainFontSize" class="font-mono text-slate-500">28</span>
+                            </div>
+                            <input type="range" id="mainFontSize" min="12" max="60" value="28" class="w-full accent-red-600">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>环形半径 / 上下位置 (px)</span>
+                                <span id="val-mainRadius" class="font-mono text-slate-500">115</span>
+                            </div>
+                            <input type="range" id="mainRadius" min="40" max="220" value="115" class="w-full accent-red-600">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>跨越角度/字符间距</span>
+                                <span id="val-mainTextSpread" class="font-mono text-slate-500">240</span>
+                            </div>
+                            <input type="range" id="mainTextSpread" min="60" max="340" value="240" class="w-full accent-red-600">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>整体旋转角度 (°)</span>
+                                <span id="val-mainTextRotate" class="font-mono text-slate-500">0</span>
+                            </div>
+                            <input type="range" id="mainTextRotate" min="-180" max="180" value="0" class="w-full accent-red-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: 中心图案 -->
+                <div id="tab-center" class="tab-content space-y-4 hidden">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-2">中心图案 / LOGO</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5">图案类型</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="center-type-btn active p-2 text-xs border rounded-lg border-red-500 bg-red-50 dark:bg-red-950/30 text-red-600 font-medium flex flex-col items-center" data-center="star">
+                                <i class="fa-solid fa-star text-base mb-1"></i>五角星
+                            </button>
+                            <button type="button" class="center-type-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-center="emblem">
+                                <i class="fa-solid fa-wheat-awn text-base mb-1"></i>党徽风格
+                            </button>
+                            <button type="button" class="center-type-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-center="custom">
+                                <i class="fa-solid fa-upload text-base mb-1"></i>自定义图片
+                            </button>
+                            <button type="button" class="center-type-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-center="dot">
+                                <i class="fa-solid fa-circle text-base mb-1"></i>实心圆
+                            </button>
+                            <button type="button" class="center-type-btn p-2 text-xs border rounded-lg border-slate-300 dark:border-slate-700 hover:border-slate-400 flex flex-col items-center" data-center="none">
+                                <i class="fa-solid fa-ban text-base mb-1"></i>无图案
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 上传图片选项 -->
+                    <div id="uploadContainer" class="hidden">
+                        <label class="block text-xs font-semibold mb-1.5">上传中心图片 (建议矢量透明图片)</label>
+                        <input type="file" id="customImageInput" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
+                    </div>
+
+                    <!-- 尺寸与位置滑块 -->
+                    <div class="space-y-3 pt-2">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>图案大小 (px)</span>
+                                <span id="val-centerSize" class="font-mono text-slate-500">70</span>
+                            </div>
+                            <input type="range" id="centerSize" min="10" max="180" value="70" class="w-full accent-red-600">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>上下位置偏移 (px)</span>
+                                <span id="val-centerOffsetY" class="font-mono text-slate-500">0</span>
+                            </div>
+                            <input type="range" id="centerOffsetY" min="-80" max="80" value="0" class="w-full accent-red-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: 副标题/编号 -->
+                <div id="tab-subtext" class="tab-content space-y-4 hidden">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-2">横向副标题 & 底部序列号</h3>
+                    
+                    <!-- 横向副标题 -->
+                    <div class="space-y-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                        <h4 class="font-semibold text-xs text-red-600 dark:text-red-400">横向副标题（如：专用章类型）</h4>
+                        <div>
+                            <input type="text" id="subText" value="印章专用章" placeholder="如：合同专用章" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-red-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-[11px] text-slate-500">字号</span>
+                                <input type="range" id="subFontSize" min="10" max="40" value="20" class="w-full accent-red-600">
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-slate-500">Y轴偏移</span>
+                                <input type="range" id="subOffsetY" min="-80" max="120" value="45" class="w-full accent-red-600">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 底部防伪码/序列号 -->
+                    <div class="space-y-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                        <h4 class="font-semibold text-xs text-red-600 dark:text-red-400">底部防伪序列号 / 英文名称</h4>
+                        <div>
+                            <input type="text" id="securityCode" value="1101050293841" placeholder="如防伪编码 12345678" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono focus:ring-2 focus:ring-red-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>排列方式</span>
+                                <select id="securityLayout" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded px-2 py-0.5 text-xs">
+                                    <option value="arc">底部弧形曲线</option>
+                                    <option value="straight">横向直线</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-[11px] text-slate-500">字号</span>
+                                <input type="range" id="securityFontSize" min="8" max="24" value="11" class="w-full accent-red-600">
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-slate-500">弧形半径/偏移</span>
+                                <input type="range" id="securityRadius" min="50" max="200" value="125" class="w-full accent-red-600">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: 做旧质感 -->
+                <div id="tab-effect" class="tab-content space-y-4 hidden">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-2">真实印迹与做旧模拟</h3>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>做旧磨损 / 缺口划痕强度</span>
+                            <span id="val-wearStrength" class="font-mono text-slate-500">35</span>
+                        </div>
+                        <input type="range" id="wearStrength" min="0" max="100" value="35" class="w-full accent-red-600">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>墨迹不均匀度 (噪点/透明度差异)</span>
+                            <span id="val-inkUnevenness" class="font-mono text-slate-500">40</span>
+                        </div>
+                        <input type="range" id="inkUnevenness" min="0" max="100" value="40" class="w-full accent-red-600">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>整体盖印手颤/倾斜角度 (°)</span>
+                            <span id="val-sealRotate" class="font-mono text-slate-500">-2</span>
+                        </div>
+                        <input type="range" id="sealRotate" min="-35" max="35" value="-2" class="w-full accent-red-600">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>随机裂纹种子 (随机更换损坏效果)</span>
+                            <button id="randomSeedBtn" class="px-2.5 py-1 text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-lg transition"><i class="fa-solid fa-dice mr-1"></i>随机刷新</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- 右侧预览与导出区域 -->
+        <main class="flex-1 flex flex-col h-1/2 md:h-full overflow-hidden bg-slate-100 dark:bg-slate-950 relative">
+            
+            <!-- 顶部控制栏 -->
+            <div class="h-12 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur px-4 flex items-center justify-between z-10 shrink-0">
+                <span class="text-xs font-semibold text-slate-500 flex items-center">
+                    <i class="fa-solid fa-eye mr-1.5"></i> 实时预览 Canvas (高清 Canvas 渲染引擎)
+                </span>
+                
+                <div class="flex items-center space-x-2">
+                    <button id="zoomOut" class="p-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50"><i class="fa-solid fa-minus"></i></button>
+                    <span id="zoomLevel" class="text-xs font-mono w-12 text-center">100%</span>
+                    <button id="zoomIn" class="p-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+
+            <!-- Canvas 画布展示区 -->
+            <div class="flex-1 overflow-auto flex items-center justify-center p-8 checkerboard-bg relative" id="canvasHolder">
+                <canvas id="sealCanvas" class="shadow-2xl rounded-sm transition-transform duration-75"></canvas>
+            </div>
+
+            <!-- 底部导出工具栏 -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-wrap gap-3 items-center justify-between shrink-0 z-10">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-500 hidden sm:inline">导出倍率:</span>
+                    <select id="exportScale" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg px-2 py-2 font-mono">
+                        <option value="1">1x 标准 (600px)</option>
+                        <option value="2" selected>2x 高清 (1200px)</option>
+                        <option value="4">4x 超清 (2400px)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button id="exportSvgBtn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-xs font-semibold flex items-center transition shadow-sm">
+                        <i class="fa-solid fa-file-code mr-1.5 text-amber-400"></i>导出 SVG 矢量
+                    </button>
+                    <button id="exportJpgBtn" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold flex items-center transition shadow-sm">
+                        <i class="fa-solid fa-file-image mr-1.5 text-blue-400"></i>导出 JPG (白底)
+                    </button>
+                    <button id="exportPngBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold flex items-center transition shadow-lg shadow-red-500/30">
+                        <i class="fa-solid fa-download mr-1.5"></i>导出 PNG (透明)
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 消息弹窗 Toast -->
+    <div id="toast" class="fixed bottom-20 right-8 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center space-x-2 transform translate-y-10 opacity-0 transition-all pointer-events-none z-50">
+        <i class="fa-solid fa-circle-check text-green-400" id="toastIcon"></i>
+        <span id="toastMsg">操作成功</span>
+    </div>
+
+    <!-- 逻辑脚本 -->
+    <script>
+        // 全局配置对象
+        const config = {
+            shape: 'circle',             // circle, ellipse, square, rectangle
+            primaryColor: '#e60012',
+            sealWidth: 300,
+            sealHeight: 200,
+            borderWidth: 10,
+            innerBorderOffset: 0,
+            
+            // 主文字
+            mainText: '深圳市某某科技有限公司',
+            mainFont: 'SimSun',
+            mainFontWeight: 'bold',
+            mainFontSize: 28,
+            mainRadius: 115,
+            mainTextSpread: 240,
+            mainTextRotate: 0,
+
+            // 中心图案
+            centerType: 'star',          // star, emblem, dot, custom, none
+            centerSize: 70,
+            centerOffsetY: 0,
+            customImage: null,
+
+            // 副标题
+            subText: '印章专用章',
+            subFontSize: 20,
+            subOffsetY: 45,
+
+            // 防伪序列号
+            securityCode: '1101050293841',
+            securityLayout: 'arc',       // arc, straight
+            securityFontSize: 11,
+            securityRadius: 125,
+
+            // 做旧与质感
+            wearStrength: 35,
+            inkUnevenness: 40,
+            sealRotate: -2,
+            randomSeed: 12345
+        };
+
+        let zoomScale = 1.0;
+        const CANVAS_SIZE = 600; // 基础 Canvas 像素尺寸
+
+        const canvas = document.getElementById('sealCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = CANVAS_SIZE;
+        canvas.height = CANVAS_SIZE;
+
+        // 预设模式定义
+        const PRESETS = {
+            company_round: {
+                shape: 'circle',
+                sealWidth: 300,
+                borderWidth: 10,
+                innerBorderOffset: 0,
+                mainText: '深圳市某某科技有限公司',
+                mainFont: 'SimSun',
+                mainFontSize: 28,
+                mainRadius: 115,
+                mainTextSpread: 240,
+                centerType: 'star',
+                centerSize: 70,
+                subText: '印章专用章',
+                subFontSize: 20,
+                subOffsetY: 45,
+                securityCode: '1101050293841'
+            },
+            finance_oval: {
+                shape: 'ellipse',
+                sealWidth: 330,
+                sealHeight: 220,
+                borderWidth: 9,
+                innerBorderOffset: 0,
+                mainText: '深圳市某某科技有限公司',
+                mainFont: 'KaiTi',
+                mainFontSize: 24,
+                mainRadius: 125,
+                mainTextSpread: 220,
+                centerType: 'none',
+                subText: '财务专用章',
+                subFontSize: 22,
+                subOffsetY: 0,
+                securityCode: '4403010928374'
+            },
+            contract_square: {
+                shape: 'square',
+                sealWidth: 260,
+                borderWidth: 12,
+                innerBorderOffset: 4,
+                mainText: '某某科技合同章',
+                mainFont: 'SimHei',
+                mainFontSize: 32,
+                centerType: 'none',
+                subText: '',
+                securityCode: ''
+            },
+            personal_rect: {
+                shape: 'rectangle',
+                sealWidth: 260,
+                sealHeight: 130,
+                borderWidth: 8,
+                innerBorderOffset: 0,
+                mainText: '李小明印',
+                mainFont: 'KaiTi',
+                mainFontSize: 42,
+                centerType: 'none',
+                subText: '',
+                securityCode: ''
+            },
+            party_round: {
+                shape: 'circle',
+                sealWidth: 300,
+                borderWidth: 10,
+                mainText: '中国共产党某某委员会',
+                mainFont: 'SimSun',
+                mainFontSize: 26,
+                centerType: 'emblem',
+                centerSize: 80,
+                subText: '',
+                securityCode: ''
+            }
+        };
+
+        // 字体名称映射（生成标准化 Canvas font 样式）
+        function getFontCss(fontSize, fontWeight = 'bold', fontFamily = 'SimSun') {
+            const fontMap = {
+                'SimSun': 'SimSun, "宋体", serif',
+                'KaiTi': 'KaiTi, "楷体", serif',
+                'SimHei': 'SimHei, "黑体", sans-serif',
+                'FangSong': 'FangSong, "仿宋", serif',
+                'Microsoft YaHei': '"Microsoft YaHei", sans-serif'
+            };
+            const family = fontMap[fontFamily] || `${fontFamily}, sans-serif`;
+            return `${fontWeight} ${fontSize}px ${family}`;
+        }
+
+        // --- 核心绘图引擎 ---
+        function renderSealOnContext(targetCtx, size = CANVAS_SIZE, isJpgBackground = false) {
+            targetCtx.clearRect(0, 0, size, size);
+
+            if (isJpgBackground) {
+                targetCtx.fillStyle = '#FFFFFF';
+                targetCtx.fillRect(0, 0, size, size);
+            }
+
+            targetCtx.save();
+            const scale = size / CANVAS_SIZE;
+            targetCtx.scale(scale, scale);
+
+            const centerX = CANVAS_SIZE / 2;
+            const centerY = CANVAS_SIZE / 2;
+
+            // 旋转 (盖印倾斜)
+            targetCtx.translate(centerX, centerY);
+            targetCtx.rotate((config.sealRotate * Math.PI) / 180);
+            targetCtx.translate(-centerX, -centerY);
+
+            targetCtx.fillStyle = config.primaryColor;
+            targetCtx.strokeStyle = config.primaryColor;
+
+            // 1. 绘制轮廓
+            drawOuterBorder(targetCtx, centerX, centerY);
+
+            // 2. 绘制中心图案
+            drawCenterPattern(targetCtx, centerX, centerY);
+
+            // 3. 绘制主文字
+            drawMainText(targetCtx, centerX, centerY);
+
+            // 4. 绘制副标题
+            drawSubText(targetCtx, centerX, centerY);
+
+            // 5. 绘制防伪编码
+            drawSecurityCode(targetCtx, centerX, centerY);
+
+            // 6. 质感做旧
+            if (config.wearStrength > 0 || config.inkUnevenness > 0) {
+                applyAgingEffects(targetCtx, centerX, centerY);
+            }
+
+            targetCtx.restore();
+        }
+
+        function drawSeal() {
+            renderSealOnContext(ctx, CANVAS_SIZE, false);
+        }
+
+        // 绘制外框
+        function drawOuterBorder(c, cx, cy) {
+            c.lineWidth = config.borderWidth;
+
+            if (config.shape === 'circle') {
+                const r = config.sealWidth / 2;
+                c.beginPath();
+                c.arc(cx, cy, r - config.borderWidth / 2, 0, Math.PI * 2);
+                c.stroke();
+
+                if (config.innerBorderOffset > 0) {
+                    c.lineWidth = Math.max(1, config.borderWidth / 3);
+                    c.beginPath();
+                    c.arc(cx, cy, r - config.borderWidth - config.innerBorderOffset, 0, Math.PI * 2);
+                    c.stroke();
+                }
+            } else if (config.shape === 'ellipse') {
+                const rx = config.sealWidth / 2;
+                const ry = config.sealHeight / 2;
+                c.beginPath();
+                c.ellipse(cx, cy, rx - config.borderWidth / 2, ry - config.borderWidth / 2, 0, 0, Math.PI * 2);
+                c.stroke();
+
+                if (config.innerBorderOffset > 0) {
+                    c.lineWidth = Math.max(1, config.borderWidth / 3);
+                    c.beginPath();
+                    c.ellipse(cx, cy, rx - config.borderWidth - config.innerBorderOffset, ry - config.borderWidth - config.innerBorderOffset, 0, 0, Math.PI * 2);
+                    c.stroke();
+                }
+            } else if (config.shape === 'square' || config.shape === 'rectangle') {
+                const w = config.sealWidth;
+                const h = config.shape === 'square' ? config.sealWidth : config.sealHeight;
+                const x = cx - w / 2 + config.borderWidth / 2;
+                const y = cy - h / 2 + config.borderWidth / 2;
+
+                c.strokeRect(x, y, w - config.borderWidth, h - config.borderWidth);
+
+                if (config.innerBorderOffset > 0) {
+                    c.lineWidth = Math.max(1, config.borderWidth / 3);
+                    const off = config.borderWidth + config.innerBorderOffset;
+                    c.strokeRect(cx - w / 2 + off, cy - h / 2 + off, w - off * 2, h - off * 2);
+                }
+            }
+        }
+
+        // 绘制中心图案
+        function drawCenterPattern(c, cx, cy) {
+            if (config.centerType === 'none') return;
+
+            c.save();
+            c.translate(cx, cy + config.centerOffsetY);
+
+            if (config.centerType === 'star') {
+                drawStar(c, 0, 0, 5, config.centerSize / 2, config.centerSize / 4);
+                c.fillStyle = config.primaryColor;
+                c.fill();
+            } else if (config.centerType === 'dot') {
+                c.beginPath();
+                c.arc(0, 0, config.centerSize / 4, 0, Math.PI * 2);
+                c.fillStyle = config.primaryColor;
+                c.fill();
+            } else if (config.centerType === 'emblem') {
+                c.strokeStyle = config.primaryColor;
+                c.lineWidth = 4;
+                const s = config.centerSize / 2;
+                c.beginPath();
+                c.arc(0, 0, s * 0.7, 0.2 * Math.PI, 1.2 * Math.PI);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(-s * 0.5, s * 0.5);
+                c.lineTo(s * 0.6, -s * 0.6);
+                c.moveTo(s * 0.2, s * 0.4);
+                c.lineTo(-s * 0.4, -s * 0.3);
+                c.stroke();
+            } else if (config.centerType === 'custom' && config.customImage) {
+                const s = config.centerSize;
+                c.drawImage(config.customImage, -s / 2, -s / 2, s, s);
+            }
+
+            c.restore();
+        }
+
+        function drawStar(c, cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = (Math.PI / 2) * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            c.beginPath();
+            c.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                c.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                c.lineTo(x, y);
+                rot += step;
+            }
+            c.lineTo(cx, cy - outerRadius);
+            c.closePath();
+        }
+
+        // 绘制主文字
+        function drawMainText(c, cx, cy) {
+            if (!config.mainText) return;
+
+            c.save();
+            c.font = getFontCss(config.mainFontSize, config.mainFontWeight, config.mainFont);
+            c.fillStyle = config.primaryColor;
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+
+            const chars = config.mainText.split('');
+            const n = chars.length;
+
+            if (config.shape === 'circle' || config.shape === 'ellipse') {
+                const totalAngle = (config.mainTextSpread * Math.PI) / 180;
+                const startAngle = -Math.PI / 2 - totalAngle / 2 + (config.mainTextRotate * Math.PI) / 180;
+                const angleStep = n > 1 ? totalAngle / (n - 1) : 0;
+
+                chars.forEach((char, i) => {
+                    const angle = startAngle + i * angleStep;
+                    c.save();
+                    let r = config.mainRadius;
+                    let x = cx + r * Math.cos(angle);
+                    let y = cy + r * Math.sin(angle);
+
+                    if (config.shape === 'ellipse') {
+                        const aspect = config.sealHeight / config.sealWidth;
+                        y = cy + r * aspect * Math.sin(angle);
+                    }
+
+                    c.translate(x, y);
+                    c.rotate(angle + Math.PI / 2);
+                    c.fillText(char, 0, 0);
+                    c.restore();
+                });
+            } else {
+                if (n <= 4 && config.shape === 'square') {
+                    const grid = [
+                        { c: chars[0], x: 30, y: -30 },
+                        { c: chars[1], x: 30, y: 30 },
+                        { c: chars[2], x: -30, y: -30 },
+                        { c: chars[3], x: -30, y: 30 }
+                    ];
+                    grid.forEach(item => {
+                        if (item.c) c.fillText(item.c, cx + item.x, cy + item.y);
+                    });
+                } else {
+                    c.fillText(config.mainText, cx, cy - config.mainRadius + 60);
+                }
+            }
+
+            c.restore();
+        }
+
+        // 绘制副标题
+        function drawSubText(c, cx, cy) {
+            if (!config.subText) return;
+
+            c.save();
+            c.font = getFontCss(config.subFontSize, 'bold', config.mainFont);
+            c.fillStyle = config.primaryColor;
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.fillText(config.subText, cx, cy + config.subOffsetY);
+            c.restore();
+        }
+
+        // 绘制防伪编码
+        function drawSecurityCode(c, cx, cy) {
+            if (!config.securityCode) return;
+
+            c.save();
+            c.font = `bold ${config.securityFontSize}px monospace, sans-serif`;
+            c.fillStyle = config.primaryColor;
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+
+            const chars = config.securityCode.split('');
+            const n = chars.length;
+
+            if (config.securityLayout === 'arc' && (config.shape === 'circle' || config.shape === 'ellipse')) {
+                const totalAngle = (100 * Math.PI) / 180;
+                const startAngle = Math.PI / 2 + totalAngle / 2;
+                const angleStep = n > 1 ? totalAngle / (n - 1) : 0;
+
+                chars.forEach((char, i) => {
+                    const angle = startAngle - i * angleStep;
+                    const r = config.securityRadius;
+                    const x = cx + r * Math.cos(angle);
+                    const y = cy + r * Math.sin(angle);
+
+                    c.save();
+                    c.translate(x, y);
+                    c.rotate(angle - Math.PI / 2);
+                    c.fillText(char, 0, 0);
+                    c.restore();
+                });
+            } else {
+                c.fillText(config.securityCode, cx, cy + config.securityRadius);
+            }
+
+            c.restore();
+        }
+
+        // 质感做旧与缺口
+        function applyAgingEffects(c, cx, cy) {
+            const rng = pseudoRandom(config.randomSeed);
+
+            // 1. 磨损缺口
+            c.save();
+            c.globalCompositeOperation = 'destination-out';
+
+            const wearCount = Math.floor(config.wearStrength * 1.5);
+            for (let i = 0; i < wearCount; i++) {
+                const angle = rng() * Math.PI * 2;
+                const dist = rng() * (config.sealWidth / 2 + 20);
+                const x = cx + Math.cos(angle) * dist;
+                const y = cy + Math.sin(angle) * dist;
+                const r = rng() * 3 + 1;
+
+                c.beginPath();
+                c.arc(x, y, r, 0, Math.PI * 2);
+                c.fill();
+            }
+
+            // 2. 划痕裂纹
+            const crackCount = Math.floor(config.wearStrength / 15);
+            for (let i = 0; i < crackCount; i++) {
+                const x = cx + (rng() - 0.5) * config.sealWidth;
+                const y = cy + (rng() - 0.5) * config.sealHeight;
+                const length = rng() * 30 + 10;
+                const angle = rng() * Math.PI * 2;
+
+                c.beginPath();
+                c.lineWidth = rng() * 2 + 0.5;
+                c.moveTo(x, y);
+                c.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length);
+                c.stroke();
+            }
+
+            c.restore();
+
+            // 3. 噪点与墨迹不均
+            c.save();
+            c.globalCompositeOperation = 'source-over';
+            const inkCount = Math.floor(config.inkUnevenness * 25);
+            c.fillStyle = config.primaryColor;
+            
+            for (let i = 0; i < inkCount; i++) {
+                const angle = rng() * Math.PI * 2;
+                const dist = rng() * (config.sealWidth / 2);
+                const x = cx + Math.cos(angle) * dist;
+                const y = cy + Math.sin(angle) * dist;
+                const r = rng() * 1.2;
+                c.globalAlpha = rng() * 0.4;
+                
+                c.beginPath();
+                c.arc(x, y, r, 0, Math.PI * 2);
+                c.fill();
+            }
+            c.restore();
+        }
+
+        function pseudoRandom(seed) {
+            return function() {
+                seed = (seed * 9301 + 49297) % 233280;
+                return seed / 233280;
+            };
+        }
+
+        // --- 异步导出 PNG/JPG (解决字体同步与丢失问题) ---
+        async function exportImage(format = 'image/png') {
+            try {
+                showToast('正在生成高分辨率图像...', 'info');
+
+                // 强制等待系统字体库 Ready，确保绘图时不丢失字体
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                const scale = parseFloat(document.getElementById('exportScale').value) || 2;
+                const targetSize = CANVAS_SIZE * scale;
+
+                // 创建离屏 Canvas
+                const exportCanvas = document.createElement('canvas');
+                exportCanvas.width = targetSize;
+                exportCanvas.height = targetSize;
+                const exportCtx = exportCanvas.getContext('2d');
+
+                // 渲染图形
+                const isJpg = format === 'image/jpeg';
+                renderSealOnContext(exportCtx, targetSize, isJpg);
+
+                // 导出 DataURL 并触发下载
+                const dataUrl = exportCanvas.toDataURL(format, 0.95);
+                const ext = isJpg ? 'jpg' : 'png';
+                
+                const link = document.createElement('a');
+                link.download = `电子印章_${new Date().getTime()}.${ext}`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast(`已成功导出 ${ext.toUpperCase()} 图形`, 'success');
+            } catch (err) {
+                console.error('导出图片失败:', err);
+                showToast('导出失败，请重试', 'error');
+            }
+        }
+
+        // --- 导出 SVG 矢量文件 ---
+        async function exportSVG() {
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                const size = CANVAS_SIZE;
+                const cx = size / 2;
+                const cy = size / 2;
+                const color = config.primaryColor;
+
+                let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">\n`;
+                
+                // 内嵌 CSS 字体定义
+                svgContent += `  <defs>\n    <style>\n`;
+                svgContent += `      .stamp-text { font-family: '${config.mainFont}', SimSun, KaiTi, sans-serif; font-weight: ${config.mainFontWeight}; fill: ${color}; }\n`;
+                svgContent += `      .stamp-sub { font-family: '${config.mainFont}', SimSun, KaiTi, sans-serif; font-weight: bold; fill: ${color}; }\n`;
+                svgContent += `      .stamp-code { font-family: monospace, sans-serif; font-weight: bold; fill: ${color}; }\n`;
+                svgContent += `    </style>\n  </defs>\n`;
+
+                // 旋转组合组
+                svgContent += `  <g transform="rotate(${config.sealRotate}, ${cx}, ${cy})">\n`;
+
+                // 1. 轮廓
+                if (config.shape === 'circle') {
+                    const r = config.sealWidth / 2 - config.borderWidth / 2;
+                    svgContent += `    <circle cx="${cx}" cy="${cy}" r="${r}" stroke="${color}" stroke-width="${config.borderWidth}" fill="none"/>\n`;
+                } else if (config.shape === 'ellipse') {
+                    const rx = config.sealWidth / 2 - config.borderWidth / 2;
+                    const ry = config.sealHeight / 2 - config.borderWidth / 2;
+                    svgContent += `    <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" stroke="${color}" stroke-width="${config.borderWidth}" fill="none"/>\n`;
+                } else if (config.shape === 'square' || config.shape === 'rectangle') {
+                    const w = config.sealWidth - config.borderWidth;
+                    const h = (config.shape === 'square' ? config.sealWidth : config.sealHeight) - config.borderWidth;
+                    svgContent += `    <rect x="${cx - w/2}" y="${cy - h/2}" width="${w}" height="${h}" stroke="${color}" stroke-width="${config.borderWidth}" fill="none"/>\n`;
+                }
+
+                // 2. 主文字
+                if (config.mainText) {
+                    const chars = config.mainText.split('');
+                    const n = chars.length;
+                    if (config.shape === 'circle' || config.shape === 'ellipse') {
+                        const totalAngle = (config.mainTextSpread * Math.PI) / 180;
+                        const startAngle = -Math.PI / 2 - totalAngle / 2 + (config.mainTextRotate * Math.PI) / 180;
+                        const angleStep = n > 1 ? totalAngle / (n - 1) : 0;
+
+                        chars.forEach((char, i) => {
+                            const angle = startAngle + i * angleStep;
+                            const r = config.mainRadius;
+                            const x = cx + r * Math.cos(angle);
+                            let y = cy + r * Math.sin(angle);
+
+                            if (config.shape === 'ellipse') {
+                                const aspect = config.sealHeight / config.sealWidth;
+                                y = cy + r * aspect * Math.sin(angle);
+                            }
+
+                            const deg = (angle + Math.PI / 2) * (180 / Math.PI);
+                            svgContent += `    <text class="stamp-text" font-size="${config.mainFontSize}" text-anchor="middle" dominant-baseline="middle" transform="translate(${x.toFixed(2)}, ${y.toFixed(2)}) rotate(${deg.toFixed(2)})">${char}</text>\n`;
+                        });
+                    } else {
+                        svgContent += `    <text class="stamp-text" font-size="${config.mainFontSize}" text-anchor="middle" x="${cx}" y="${cy - config.mainRadius + 60}">${config.mainText}</text>\n`;
+                    }
+                }
+
+                // 3. 副标题
+                if (config.subText) {
+                    svgContent += `    <text class="stamp-sub" font-size="${config.subFontSize}" text-anchor="middle" dominant-baseline="middle" x="${cx}" y="${cy + config.subOffsetY}">${config.subText}</text>\n`;
+                }
+
+                // 4. 防伪编码
+                if (config.securityCode && config.securityLayout === 'straight') {
+                    svgContent += `    <text class="stamp-code" font-size="${config.securityFontSize}" text-anchor="middle" x="${cx}" y="${cy + config.securityRadius}">${config.securityCode}</text>\n`;
+                }
+
+                svgContent += `  </g>\n</svg>`;
+
+                const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `电子印章_${new Date().getTime()}.svg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast('已成功导出 SVG 矢量文件', 'success');
+            } catch (err) {
+                console.error('导出 SVG 失败:', err);
+                showToast('导出 SVG 失败', 'error');
+            }
+        }
+
+        // --- DOM 事件与交互响应 ---
+        function initEvents() {
+            // Tab 切换
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-b-2', 'border-red-600', 'text-red-600', 'font-bold'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+                    const target = btn.dataset.tab;
+                    btn.classList.add('active', 'border-b-2', 'border-red-600', 'text-red-600', 'font-bold');
+                    document.getElementById(target).classList.remove('hidden');
+                });
+            });
+
+            // 形状选择
+            document.querySelectorAll('.shape-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.shape-btn').forEach(b => {
+                        b.classList.remove('active', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/30', 'text-red-600', 'font-medium');
+                        b.classList.add('border-slate-300', 'dark:border-slate-700');
+                    });
+                    btn.classList.add('active', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/30', 'text-red-600', 'font-medium');
+                    config.shape = btn.dataset.shape;
+
+                    const heightCtrl = document.getElementById('heightControlContainer');
+                    if (config.shape === 'ellipse' || config.shape === 'rectangle') {
+                        heightCtrl.classList.remove('hidden');
+                    } else {
+                        heightCtrl.classList.add('hidden');
+                    }
+                    drawSeal();
+                });
+            });
+
+            // 中心图案选择
+            document.querySelectorAll('.center-type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.center-type-btn').forEach(b => {
+                        b.classList.remove('active', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/30', 'text-red-600');
+                    });
+                    btn.classList.add('active', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/30', 'text-red-600');
+                    config.centerType = btn.dataset.center;
+
+                    const uploadContainer = document.getElementById('uploadContainer');
+                    if (config.centerType === 'custom') {
+                        uploadContainer.classList.remove('hidden');
+                    } else {
+                        uploadContainer.classList.add('hidden');
+                    }
+                    drawSeal();
+                });
+            });
+
+            // 颜色选择
+            document.querySelectorAll('.color-preset').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setColor(btn.dataset.color);
+                });
+            });
+
+            document.getElementById('primaryColor').addEventListener('input', (e) => setColor(e.target.value));
+            document.getElementById('primaryColorHex').addEventListener('change', (e) => setColor(e.target.value));
+
+            function setColor(hex) {
+                config.primaryColor = hex;
+                document.getElementById('primaryColor').value = hex;
+                document.getElementById('primaryColorHex').value = hex;
+                drawSeal();
+            }
+
+            // 自定义 LOGO 上传
+            document.getElementById('customImageInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            config.customImage = img;
+                            drawSeal();
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // 范围滑块绑定
+            const sliders = [
+                'sealWidth', 'sealHeight', 'borderWidth', 'innerBorderOffset',
+                'mainFontSize', 'mainRadius', 'mainTextSpread', 'mainTextRotate',
+                'centerSize', 'centerOffsetY', 'subFontSize', 'subOffsetY',
+                'securityFontSize', 'securityRadius', 'wearStrength', 'inkUnevenness', 'sealRotate'
+            ];
+
+            sliders.forEach(id => {
+                const input = document.getElementById(id);
+                const label = document.getElementById(`val-${id}`);
+                if (input) {
+                    input.addEventListener('input', (e) => {
+                        const val = parseFloat(e.target.value);
+                        config[id] = val;
+                        if (label) label.textContent = val;
+                        drawSeal();
+                    });
+                }
+            });
+
+            // 文本与下拉框绑定
+            const inputs = ['mainText', 'mainFont', 'mainFontWeight', 'subText', 'securityCode', 'securityLayout'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', (e) => {
+                        config[id] = e.target.value;
+                        drawSeal();
+                    });
+                }
+            });
+
+            // 预设模式切换
+            document.getElementById('presetSelect').addEventListener('change', (e) => {
+                const key = e.target.value;
+                if (PRESETS[key]) {
+                    Object.assign(config, PRESETS[key]);
+                    syncUIFromConfig();
+                    drawSeal();
+                    showToast('已成功载入预设模版', 'info');
+                }
+            });
+
+            // 随机刷刷新做旧
+            document.getElementById('randomSeedBtn').addEventListener('click', () => {
+                config.randomSeed = Math.floor(Math.random() * 100000);
+                drawSeal();
+            });
+
+            // 重置
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                Object.assign(config, PRESETS.company_round);
+                syncUIFromConfig();
+                drawSeal();
+                showToast('参数已恢复初始配置', 'info');
+            });
+
+            // 预览放大缩小
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                zoomScale = Math.min(zoomScale + 0.15, 2.0);
+                updateZoom();
+            });
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                zoomScale = Math.max(zoomScale - 0.15, 0.4);
+                updateZoom();
+            });
+
+            // 主题切换
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+
+            // 导出按钮触发
+            document.getElementById('exportPngBtn').addEventListener('click', () => exportImage('image/png'));
+            document.getElementById('exportJpgBtn').addEventListener('click', () => exportImage('image/jpeg'));
+            document.getElementById('exportSvgBtn').addEventListener('click', exportSVG);
+        }
+
+        function updateZoom() {
+            canvas.style.transform = `scale(${zoomScale})`;
+            document.getElementById('zoomLevel').textContent = `${Math.round(zoomScale * 100)}%`;
+        }
+
+        function syncUIFromConfig() {
+            document.getElementById('mainText').value = config.mainText;
+            document.getElementById('mainFont').value = config.mainFont;
+            document.getElementById('subText').value = config.subText;
+            document.getElementById('securityCode').value = config.securityCode;
+
+            for (let key in config) {
+                const input = document.getElementById(key);
+                const label = document.getElementById(`val-${key}`);
+                if (input && input.type === 'range') {
+                    input.value = config[key];
+                    if (label) label.textContent = config[key];
+                }
+            }
+
+            document.querySelectorAll('.shape-btn').forEach(btn => {
+                if (btn.dataset.shape === config.shape) btn.click();
+            });
+
+            document.querySelectorAll('.center-type-btn').forEach(btn => {
+                if (btn.dataset.center === config.centerType) btn.click();
+            });
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').textContent = msg;
+
+            if (type === 'error') {
+                icon.className = 'fa-solid fa-circle-exclamation text-red-400';
+            } else if (type === 'info') {
+                icon.className = 'fa-solid fa-circle-info text-blue-400';
+            } else {
+                icon.className = 'fa-solid fa-circle-check text-green-400';
+            }
+
+            toast.classList.remove('translate-y-10', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 2500);
+        }
+
+        window.onload = function() {
+            initEvents();
+            drawSeal();
+        };
+    </script>
+</body>
+</html>
