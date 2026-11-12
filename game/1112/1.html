@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UEFA EURO 2024 // 9:16 竖屏游戏级动态背景 (ENG vs CRO)</title>
+    <!-- Gaming, Esport & Chinese Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;900&family=Orbitron:wght@600;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --neon-red: #ff1e38;
+            --crimson-glow: rgba(255, 30, 56, 0.78);
+            --ice-white: #f2f7ff;
+            --hud-bg: rgba(9, 13, 22, 0.74);
+            --hud-border: rgba(255, 255, 255, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #050608;
+            background-image: radial-gradient(circle at 50% 50%, #101522 0%, #050608 75%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rajdhani', 'Noto Sans SC', sans-serif;
+            color: var(--ice-white);
+        }
+
+        .font-display {
+            font-family: 'Orbitron', 'Noto Sans SC', sans-serif;
+        }
+
+        /* =========================================================
+           STRICT 9:16 VERTICAL PORTRAIT FRAME (768x1344 / 1080x1920)
+           ========================================================= */
+        #stage-wrapper {
+            position: relative;
+            aspect-ratio: 9 / 16;
+            width: min(100vw, calc(100vh * 9 / 16));
+            height: min(100vh, calc(100vw * 16 / 9));
+            max-width: 100vw;
+            max-height: 100vh;
+            overflow: hidden;
+            background-color: #070a10;
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.12),
+                0 24px 80px rgba(0, 0, 0, 0.92),
+                0 0 60px rgba(255, 30, 56, 0.18);
+            transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                        height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                        aspect-ratio 0.35s ease;
+        }
+
+        /* Optional Full-Bleed Mode when toggled */
+        #stage-wrapper.immersive-fill {
+            aspect-ratio: unset;
+            width: 100vw;
+            height: 100vh;
+            box-shadow: none;
+        }
+
+        /* 3D Parallax Container inside the 9:16 Frame */
+        #arena-stage {
+            position: absolute;
+            inset: -3.5%;
+            width: 107%;
+            height: 107%;
+            perspective: 1100px;
+            transform-style: preserve-3d;
+            transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 1;
+        }
+
+        /* 1:1 Aligned Vertical Poster Layer */
+        #bg-poster {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('image.png');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            filter: contrast(1.07) saturate(1.14) brightness(0.94);
+            transition: filter 0.08s ease-out;
+        }
+
+        /* Fallback stylized 9:16 backdrop if image.png is absent */
+        #bg-fallback {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 28% 36%, rgba(255, 255, 255, 0.24) 0%, transparent 36%),
+                radial-gradient(circle at 72% 36%, rgba(255, 30, 56, 0.34) 0%, transparent 38%),
+                radial-gradient(ellipse at 50% 85%, rgba(255, 24, 48, 0.38) 0%, rgba(7, 10, 18, 0.96) 62%),
+                linear-gradient(180deg, #0b101b 0%, #151c2c 50%, #07090e 100%);
+            z-index: -1;
+        }
+
+        /* =========================================================
+           CALIBRATED 9:16 POSTER ENERGY OVERLAYS (LIVING & BREATHING)
+           ========================================================= */
+        /* Top Hanging Banners Wind-Ripple Shimmer (y: 0% - 26%) */
+        .banner-wind-shimmer {
+            position: absolute;
+            top: 0;
+            left: 4%;
+            right: 4%;
+            height: 27%;
+            background: linear-gradient(
+                105deg,
+                transparent 20%,
+                rgba(255, 255, 255, 0.1) 42%,
+                rgba(255, 45, 70, 0.08) 54%,
+                transparent 78%
+            );
+            background-size: 200% 100%;
+            mix-blend-mode: screen;
+            animation: bannerWindWave 6.4s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        /* Distant Cloud Sheet-Lightning Backlight (y: 0% - 34%) */
+        #cloud-sheet-flash {
+            position: absolute;
+            top: -2%;
+            left: 15%;
+            right: 15%;
+            height: 36%;
+            background: radial-gradient(ellipse at 50% 28%, rgba(215, 232, 255, 0.68) 0%, rgba(255, 45, 75, 0.25) 48%, transparent 78%);
+            mix-blend-mode: screen;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.08s ease-out;
+        }
+
+        /* England Spectral Lion Aura (x: 28%, y: 36%) - Driven by JS Breath Engine */
+        .lion-aura-left {
+            position: absolute;
+            top: 19%;
+            left: 1%;
+            width: 54%;
+            height: 34%;
+            background: radial-gradient(circle at 50% 50%, rgba(235, 246, 255, 0.42) 0%, rgba(255, 45, 70, 0.18) 46%, transparent 72%);
+            mix-blend-mode: screen;
+            transform-origin: 50% 50%;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+
+        /* Croatia Spectral Lion Aura (x: 72%, y: 36%) - Driven by JS Breath Engine */
+        .lion-aura-right {
+            position: absolute;
+            top: 19%;
+            right: 1%;
+            width: 54%;
+            height: 34%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 28, 52, 0.48) 0%, rgba(255, 115, 125, 0.2) 46%, transparent 72%);
+            mix-blend-mode: screen;
+            transform-origin: 50% 50%;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+
+        /* Stadium Roof Floodlights Shimmer (y: ~47%) */
+        .floodlights-glow {
+            position: absolute;
+            top: 43%;
+            left: 6%;
+            right: 6%;
+            height: 10%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, rgba(200, 225, 255, 0.12) 52%, transparent 76%);
+            mix-blend-mode: screen;
+            animation: floodlightFlicker 5.2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Pitch Red Energy Fissures Heartbeat Pulse (y: 72% - 98%) */
+        .pitch-energy-glow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background:
+                radial-gradient(ellipse at 50% 65%, rgba(255, 22, 48, 0.48) 0%, rgba(255, 10, 35, 0.18) 48%, transparent 78%),
+                linear-gradient(0deg, rgba(255, 20, 45, 0.28) 0%, transparent 65%);
+            mix-blend-mode: screen;
+            animation: pitchHeartbeat 3.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Traveling Energy Wave surging forward toward Penalty Spot */
+        .pitch-wave-scan {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 28%;
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                rgba(255, 38, 68, 0.32) 50%,
+                transparent 100%
+            );
+            background-size: 100% 200%;
+            mix-blend-mode: screen;
+            animation: fissureSurgeForward 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            pointer-events: none;
+        }
+        @keyframes bannerWindWave {
+            0% { background-position: 0% 50%; opacity: 0.45; transform: skewX(-0.6deg); }
+            50% { opacity: 0.9; }
+            100% { background-position: 100% 50%; opacity: 0.5; transform: skewX(0.6deg); }
+        }
+
+        @keyframes pitchHeartbeat {
+            0%, 100% { opacity: 0.44; transform: scaleY(0.98); }
+            22% { opacity: 0.98; transform: scaleY(1.03); }
+            38% { opacity: 0.62; transform: scaleY(1.0); }
+            54% { opacity: 0.88; transform: scaleY(1.02); }
+        }
+
+        @keyframes fissureSurgeForward {
+            0% { background-position: 0% 0%; opacity: 0.15; }
+            45% { opacity: 0.9; }
+            100% { background-position: 0% 100%; opacity: 0.15; }
+        }
+
+        @keyframes floodlightFlicker {
+            0%, 100% { opacity: 0.72; transform: scaleX(0.99); }
+            50% { opacity: 0.98; transform: scaleX(1.02); }
+            76% { opacity: 0.64; }
+            79% { opacity: 0.95; }
+        }
+
+        /* Stadium Roof Floodlights Shimmer (y: ~47%) */
+        .floodlights-glow {
+            position: absolute;
+            top: 43%;
+            left: 6%;
+            right: 6%;
+            height: 10%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.28) 0%, rgba(200, 225, 255, 0.1) 52%, transparent 76%);
+            mix-blend-mode: screen;
+            animation: floodlightFlicker 4.8s infinite;
+            pointer-events: none;
+        }
+
+        /* Pitch Red Energy Fissures Pulse (y: 72% - 98%) */
+        .pitch-energy-glow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background:
+                radial-gradient(ellipse at 50% 65%, rgba(255, 22, 48, 0.42) 0%, rgba(255, 10, 35, 0.16) 48%, transparent 78%),
+                linear-gradient(0deg, rgba(255, 20, 45, 0.24) 0%, transparent 65%);
+            mix-blend-mode: screen;
+            animation: pitchPulse 2.2s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        /* Traveling Energy Wave across Turf Cracks */
+        .pitch-wave-scan {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 28%;
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                rgba(255, 35, 65, 0.28) 50%,
+                transparent 100%
+            );
+            background-size: 100% 200%;
+            mix-blend-mode: screen;
+            animation: fissureSweep 3.2s linear infinite;
+            pointer-events: none;
+        }
+
+        /* Canvas Layer strictly bound to 9:16 Stage */
+        #fx-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Cinematic Vignette & Esport Scanlines inside 9:16 Frame */
+        .cinematic-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 48%, transparent 52%, rgba(2, 4, 9, 0.72) 100%);
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .hud-scanlines {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.016) 0px,
+                rgba(255, 255, 255, 0.016) 1px,
+                transparent 1px,
+                transparent 4px
+            );
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Screen Lightning Flash Overlay */
+        #lightning-flash {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 35%, rgba(255, 240, 245, 0.62), rgba(255, 30, 56, 0.28) 58%, transparent 90%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 6;
+            mix-blend-mode: screen;
+            transition: opacity 0.06s ease-out;
+        }
+
+        /* Animations */
+        @keyframes cameraShake {
+            0% { transform: translate(0, 0) scale(1.025); }
+            15% { transform: translate(-5px, 4px) scale(1.03); }
+            30% { transform: translate(5px, -5px) scale(1.03); }
+            45% { transform: translate(-4px, -2px) scale(1.028); }
+            60% { transform: translate(4px, 3px) scale(1.028); }
+            75% { transform: translate(-2px, 2px) scale(1.025); }
+            100% { transform: translate(0, 0) scale(1.025); }
+        }
+
+        .shake-active {
+            animation: cameraShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes lionPulseLeft {
+            0% { opacity: 0.48; transform: scale(0.97); }
+            100% { opacity: 0.96; transform: scale(1.04); }
+        }
+
+        @keyframes lionPulseRight {
+            0% { opacity: 0.52; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1.05); }
+        }
+
+        @keyframes pitchPulse {
+            0% { opacity: 0.42; }
+            100% { opacity: 0.95; }
+        }
+
+        @keyframes fissureSweep {
+            0% { background-position: 0% 100%; opacity: 0.2; }
+            50% { opacity: 0.85; }
+            100% { background-position: 0% -100%; opacity: 0.2; }
+        }
+
+        @keyframes floodlightFlicker {
+            0%, 100% { opacity: 0.78; }
+            48% { opacity: 0.88; }
+            50% { opacity: 0.48; }
+            52% { opacity: 0.96; }
+            84% { opacity: 0.98; }
+        }
+
+        /* =========================================================
+           VERTICAL MOBILE GAME-LOBBY HUD (TIKTOK/DOUYIN SAFE ZONES)
+           ========================================================= */
+        #game-hud {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* Safe-zone padding tailored for 9:16 mobile & short-video UI */
+            padding: 0.85rem 0.85rem 1.25rem 0.85rem;
+        }
+
+        #game-hud.hud-hidden .hud-collapsible {
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none !important;
+        }
+
+        .hud-panel {
+            background: var(--hud-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--hud-border);
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+            pointer-events: auto;
+        }
+
+        /* Cyberpunk-Sport CTA Trigger */
+        .btn-kickoff {
+            position: relative;
+            background: linear-gradient(135deg, #ff1e38 0%, #9b071a 100%);
+            border: 1px solid rgba(255, 175, 188, 0.65);
+            box-shadow: 0 0 22px rgba(255, 30, 56, 0.65), inset 0 0 12px rgba(255, 255, 255, 0.28);
+            clip-path: polygon(8% 0, 100% 0, 92% 100%, 0% 100%);
+            transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+            overflow: hidden;
+        }
+
+        .btn-kickoff::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 55%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent);
+            transform: skewX(-24deg);
+            transition: left 0.5s ease;
+        }
+
+        .btn-kickoff:hover {
+            transform: translateY(-1px) scale(1.03);
+            box-shadow: 0 0 34px rgba(255, 30, 56, 0.92), inset 0 0 16px rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-kickoff:hover::before {
+            left: 145%;
+        }
+
+        .btn-kickoff:active {
+            transform: scale(0.97);
+        }
+
+        /* Team Crest Accents */
+        .croatia-checkers {
+            background-image:
+                linear-gradient(45deg, #e6192e 25%, transparent 25%),
+                linear-gradient(-45deg, #e6192e 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e6192e 75%),
+                linear-gradient(-45deg, transparent 75%, #e6192e 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+            background-color: #ffffff;
+        }
+
+        .england-cross {
+            position: relative;
+            background-color: #ffffff;
+        }
+        .england-cross::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 4px;
+            transform: translateX(-50%);
+            background-color: #ce1124;
+        }
+        .england-cross::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; top: 50%;
+            height: 4px;
+            transform: translateY(-50%);
+            background-color: #ce1124;
+        }
+
+        /* Center Match Notification Toast inside 9:16 Frame */
+        #match-toast {
+            position: absolute;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 84%;
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #match-toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Strict 9:16 Vertical Mobile Stage (768x1344 / 1080x1920 Standard) -->
+    <main id="stage-wrapper">
+        <!-- 3D Parallax & Living Breathing Background Layers -->
+        <div id="arena-stage">
+            <div id="bg-fallback"></div>
+            <div id="bg-poster"></div>
+            <!-- Calibrated 9:16 Living Energy & Storm Overlays -->
+            <div class="banner-wind-shimmer"></div>
+            <div id="cloud-sheet-flash"></div>
+            <div id="lion-aura-left" class="lion-aura-left"></div>
+            <div id="lion-aura-right" class="lion-aura-right"></div>
+            <div class="floodlights-glow"></div>
+            <div class="pitch-energy-glow"></div>
+            <div class="pitch-wave-scan"></div>
+        </div>
+
+        <!-- Multi-layered Weather, Embers & Lightning Canvas -->
+        <canvas id="fx-canvas"></canvas>
+
+        <!-- Lightning Flash & Post-Processing -->
+        <div id="lightning-flash"></div>
+        <div class="cinematic-vignette"></div>
+        <div class="hud-scanlines"></div>
+
+        <!-- Match Surge Toast Notification -->
+        <div id="match-toast" class="hud-panel px-5 py-4 rounded-xl border-red-500/70 text-center">
+            <div class="text-[10px] tracking-[0.28em] text-red-400 font-bold uppercase mb-1">UEFA EURO 2024 // LIVE LOBBY</div>
+            <div class="font-display text-xl font-black tracking-wider text-white mb-1.5">双狮觉醒 • 巅峰对决</div>
+            <p class="text-xs text-slate-300 leading-relaxed">点击画面任意位置召唤高能闪电，或点击右上角「隐藏UI」开启纯净 9:16 录屏背景。</p>
+        </div>
+
+        <!-- Vertical Safe-Zone Game Lobby HUD -->
+        <div id="game-hud">
+            <!-- Top Compact Esport Header & Utility Bar -->
+            <header class="flex flex-col gap-2 w-full">
+                <div class="flex items-center justify-between gap-1.5 w-full">
+                    <!-- Live Status Badge -->
+                    <div class="hud-panel hud-collapsible px-2.5 py-1.5 rounded-lg flex items-center gap-2 border-l-2 border-l-red-500 transition-all duration-300">
+                        <span class="relative flex h-2 w-2 shrink-0">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                        </span>
+                        <div class="leading-tight">
+                            <div class="font-display text-[10px] font-bold tracking-wider text-white">EURO 2024 • LIVE</div>
+                            <div class="text-[9px] tracking-widest text-red-400 font-semibold">ENG vs CRO</div>
+                        </div>
+                    </div>
+
+                    <!-- Utility Controls (Always Accessible) -->
+                    <div class="flex items-center gap-1.5 pointer-events-auto ml-auto">
+                        <!-- Aspect Ratio Toggle (9:16 Standard vs Fullscreen) -->
+                        <button id="btn-ratio" title="切换 9:16 竖屏比例 / 满屏模式" class="hud-panel hover:border-amber-400/70 px-2 py-1.5 rounded-lg text-[10px] font-display font-bold tracking-wider text-amber-300 transition active:scale-95">
+                            <span id="ratio-label">9:16 竖屏</span>
+                        </button>
+
+                        <!-- Procedural Web Audio SFX Toggle -->
+                        <button id="btn-audio" title="开启/关闭雷雨与球场音效" class="hud-panel hover:border-sky-400/70 px-2 py-1.5 rounded-lg text-[10px] font-display font-bold tracking-wider flex items-center gap-1 text-slate-200 transition active:scale-95">
+                            <svg id="icon-sound-off" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                            <svg id="icon-sound-on" class="w-3.5 h-3.5 text-emerald-400 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                            <span id="audio-label">音效:关</span>
+                        </button>
+
+                        <!-- Hide HUD (Clean Recording Mode) -->
+                        <button id="btn-toggle-hud" title="隐藏UI用于抖音/TikTok纯净录屏" class="hud-panel hover:border-white/60 px-2 py-1.5 rounded-lg text-[10px] font-display font-bold tracking-wider flex items-center gap-1 text-slate-200 transition active:scale-95">
+                            <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            <span id="hud-toggle-label">隐藏UI</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Bottom Tactical Player Badges & CTA (Safe-Zone Positioned) -->
+            <footer class="hud-collapsible w-full flex flex-col gap-2.5 transition-all duration-300 pb-2">
+                <!-- Flank Player Badges aligned above #9 Kane (Left) & #10 Modric (Right) -->
+                <div class="flex items-center justify-between gap-2 w-full">
+                    <!-- Left Player Badge: #9 H. KANE | ENG -->
+                    <div class="hud-panel px-2.5 py-1.5 rounded-lg border-l-2 border-l-white flex items-center gap-2">
+                        <div class="w-5 h-5 rounded-sm england-cross border border-slate-300 shrink-0"></div>
+                        <div class="leading-tight">
+                            <div class="font-display text-[11px] font-black tracking-wider text-white">#9 H. KANE</div>
+                            <div class="text-[9px] font-bold tracking-widest text-slate-300">ENG • THREE LIONS</div>
+                        </div>
+                    </div>
+
+                    <!-- Right Player Badge: #10 L. MODRIC | CRO -->
+                    <div class="hud-panel px-2.5 py-1.5 rounded-lg border-r-2 border-r-red-500 flex items-center gap-2 text-right">
+                        <div class="leading-tight">
+                            <div class="font-display text-[11px] font-black tracking-wider text-white">#10 L. MODRIĆ</div>
+                            <div class="text-[9px] font-bold tracking-widest text-red-400">CRO • VATRENI</div>
+                        </div>
+                        <div class="w-5 h-5 rounded-sm croatia-checkers border border-red-400/60 shrink-0"></div>
+                    </div>
+                </div>
+
+                <!-- Center Match Action CTA -->
+                <div class="flex flex-col items-center justify-center text-center">
+                    <button id="btn-kickoff" class="btn-kickoff px-7 py-2.5 font-display text-xs sm:text-sm font-black tracking-[0.16em] text-white uppercase cursor-pointer">
+                        ENTER MATCH • 开始对决
+                    </button>
+                    <div class="mt-1.5 text-[10px] text-slate-200/80 tracking-widest drop-shadow">
+                        轻触屏幕召唤闪电 • 768×1344 / 9:16 竖屏
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * UEFA EURO 2024 (9:16 VERTICAL PORTRAIT ENGINE)
+         * Calibrated specifically to image.png:
+         * - Left Lion Head/Mane: (28%, 36%)
+         * - Right Lion Head/Mane: (72%, 36%)
+         * - Jaw-to-Jaw Lightning Gap: (42% <-> 58%, 35%)
+         * - Wet Pitch & Red Energy Fissures: (y: 72% -> 98%)
+         */
+
+        const stageWrapper = document.getElementById('stage-wrapper');
+        const canvas = document.getElementById('fx-canvas');
+        const ctx = canvas.getContext('2d');
+        const arenaStage = document.getElementById('arena-stage');
+        const bgPoster = document.getElementById('bg-poster');
+        const lightningFlash = document.getElementById('lightning-flash');
+        const cloudSheetFlash = document.getElementById('cloud-sheet-flash');
+        const lionAuraLeft = document.getElementById('lion-aura-left');
+        const lionAuraRight = document.getElementById('lion-aura-right');
+
+        let width = 0;
+        let height = 0;
+
+        // Dynamically match Canvas resolution to the 9:16 stage container
+        function resizeStageCanvas() {
+            const rect = stageWrapper.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            width = rect.width;
+            height = rect.height;
+            canvas.width = Math.round(width * dpr);
+            canvas.height = Math.round(height * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            initParticles();
+        }
+
+        window.addEventListener('resize', resizeStageCanvas);
+
+        // Smooth 3D Parallax (Mouse + Touch + DeviceOrientation)
+        const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+
+        stageWrapper.addEventListener('mousemove', (e) => {
+            const rect = stageWrapper.getBoundingClientRect();
+            mouse.targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+            mouse.targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        });
+
+        stageWrapper.addEventListener('mouseleave', () => {
+            mouse.targetX = 0;
+            mouse.targetY = 0;
+        });
+
+        stageWrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                const rect = stageWrapper.getBoundingClientRect();
+                mouse.targetX = ((e.touches[0].clientX - rect.left) / rect.width - 0.5) * 2;
+                mouse.targetY = ((e.touches[0].clientY - rect.top) / rect.height - 0.5) * 2;
+            }
+        }, { passive: true });
+
+        window.addEventListener('deviceorientation', (e) => {
+            if (e.gamma !== null && e.beta !== null) {
+                mouse.targetX = Math.max(-1, Math.min(1, e.gamma / 25));
+                mouse.targetY = Math.max(-1, Math.min(1, (e.beta - 45) / 25));
+            }
+        });
+
+        // ==========================================
+        // 1. PROCEDURAL WEB AUDIO ENGINE
+        // ==========================================
+        class ArenaAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.isPlaying = false;
+                this.masterGain = null;
+            }
+
+            init() {
+                if (this.ctx) return;
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioCtx();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = 0.45;
+                this.masterGain.connect(this.ctx.destination);
+                this.startRainAndCrowd();
+            }
+
+            startRainAndCrowd() {
+                const bufferSize = this.ctx.sampleRate * 3;
+                const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                // Rain hiss
+                const rainSource = this.ctx.createBufferSource();
+                rainSource.buffer = noiseBuffer;
+                rainSource.loop = true;
+
+                const rainFilter = this.ctx.createBiquadFilter();
+                rainFilter.type = 'bandpass';
+                rainFilter.frequency.value = 1850;
+                rainFilter.Q.value = 0.65;
+
+                const rainGain = this.ctx.createGain();
+                rainGain.gain.value = 0.16;
+
+                rainSource.connect(rainFilter);
+                rainFilter.connect(rainGain);
+                rainGain.connect(this.masterGain);
+                rainSource.start();
+
+                // Stadium roar & storm rumble
+                const crowdSource = this.ctx.createBufferSource();
+                crowdSource.buffer = noiseBuffer;
+                crowdSource.loop = true;
+
+                const crowdFilter = this.ctx.createBiquadFilter();
+                crowdFilter.type = 'lowpass';
+                crowdFilter.frequency.value = 200;
+
+                const crowdGain = this.ctx.createGain();
+                crowdGain.gain.value = 0.36;
+
+                crowdSource.connect(crowdFilter);
+                crowdFilter.connect(crowdGain);
+                crowdGain.connect(this.masterGain);
+                crowdSource.start();
+            }
+
+            playThunder() {
+                if (!this.isPlaying || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const duration = 2.2;
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    const decay = Math.exp(-i / (this.ctx.sampleRate * 0.6));
+                    data[i] = (Math.random() * 2 - 1) * decay;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(680, now);
+                filter.frequency.exponentialRampToValueAtTime(90, now + duration);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.85, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.masterGain);
+                noise.start(now);
+            }
+
+            toggle() {
+                if (!this.ctx) this.init();
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+                this.isPlaying = !this.isPlaying;
+                this.masterGain.gain.setTargetAtTime(this.isPlaying ? 0.45 : 0, this.ctx.currentTime, 0.15);
+                return this.isPlaying;
+            }
+        }
+
+        const audioEngine = new ArenaAudioEngine();
+
+        // ==========================================
+        // 2. 9:16 CALIBRATED PARTICLE & LIGHTNING FX
+        // ==========================================
+        let raindrops = [];
+        let splashes = [];
+        let embers = [];
+        let smokeClouds = [];
+        let lightningBolts = [];
+        let shockwaves = [];
+        let maneVeins = [];
+
+        function initParticles() {
+            if (!width || !height) return;
+
+            // Slanted rain tuned for vertical 9:16 framing
+            const rainCount = Math.min(180, Math.floor((width * height) / 3400));
+            raindrops = Array.from({ length: rainCount }, () => ({
+                x: Math.random() * width * 1.25,
+                y: Math.random() * height,
+                len: 14 + Math.random() * 22,
+                speed: 14 + Math.random() * 13,
+                opacity: 0.15 + Math.random() * 0.28,
+                wind: -1.8 - Math.random() * 1.2
+            }));
+
+            // Glowing crimson & gold embers rising from pitch cracks
+            const emberCount = Math.min(68, Math.floor(width / 6));
+            embers = Array.from({ length: emberCount }, () => createEmber(true));
+
+            // Volumetric storm & stadium mist rolling across bowl
+            smokeClouds = Array.from({ length: 12 }, () => ({
+                x: Math.random() * width,
+                y: height * (0.2 + Math.random() * 0.58),
+                radius: width * (0.28 + Math.random() * 0.26),
+                vx: (Math.random() - 0.5) * 0.42,
+                baseAlpha: 0.036 + Math.random() * 0.042,
+                phase: Math.random() * Math.PI * 2,
+                tint: Math.random() > 0.45 ? '255, 42, 68' : '200, 220, 248'
+            }));
+
+            // Electric capillary veins along both lions' manes & jaws
+            maneVeins = [
+                // Left England Lion (centered around 26%, 35%)
+                { side: 'left', pts: [[0.14, 0.27], [0.21, 0.30], [0.28, 0.29], [0.35, 0.33]], phase: 0.0 },
+                { side: 'left', pts: [[0.12, 0.36], [0.19, 0.38], [0.27, 0.37], [0.36, 0.36]], phase: 1.4 },
+                { side: 'left', pts: [[0.17, 0.44], [0.24, 0.42], [0.31, 0.40], [0.37, 0.38]], phase: 2.7 },
+                // Right Croatia Lion (centered around 74%, 35%)
+                { side: 'right', pts: [[0.86, 0.27], [0.79, 0.30], [0.72, 0.29], [0.65, 0.33]], phase: 0.8 },
+                { side: 'right', pts: [[0.88, 0.36], [0.81, 0.38], [0.73, 0.37], [0.64, 0.36]], phase: 2.1 },
+                { side: 'right', pts: [[0.83, 0.44], [0.76, 0.42], [0.69, 0.40], [0.63, 0.38]], phase: 3.4 }
+            ];
+        }
+
+        function createEmber(randomY = false, customOrigin = null) {
+            if (customOrigin) {
+                // Exhaled sparks from lion jaws toward the center clash gap
+                const dir = customOrigin.side === 'left' ? 1 : -1;
+                return {
+                    x: customOrigin.x + (Math.random() - 0.5) * 14,
+                    y: customOrigin.y + (Math.random() - 0.5) * 16,
+                    size: 1.0 + Math.random() * 2.1,
+                    vy: (Math.random() - 0.55) * 1.1,
+                    vx: dir * (0.9 + Math.random() * 1.6),
+                    wobble: Math.random() * Math.PI * 2,
+                    alpha: 0.75 + Math.random() * 0.25,
+                    colorType: customOrigin.side === 'left' ? 0.1 : 0.75
+                };
+            }
+            return {
+                x: Math.random() * width,
+                y: randomY ? height * (0.35 + Math.random() * 0.65) : height * (0.76 + Math.random() * 0.24),
+                size: 1.1 + Math.random() * 2.4,
+                vy: -(0.8 + Math.random() * 2.1),
+                vx: (Math.random() - 0.5) * 0.75,
+                wobble: Math.random() * Math.PI * 2,
+                alpha: 0.55 + Math.random() * 0.45,
+                colorType: Math.random() // >0.32 crimson, <=0.32 gold/white
+            };
+        }
+
+        // Procedural Forked Lightning Generator
+        function buildBoltSegments(x1, y1, x2, y2, displace, segments, allowBranch = true) {
+            if (displace < 4) {
+                segments.push({ x1, y1, x2, y2 });
+                return;
+            }
+            const midX = (x1 + x2) / 2 + (Math.random() - 0.5) * displace;
+            const midY = (y1 + y2) / 2 + (Math.random() - 0.5) * displace;
+            buildBoltSegments(x1, y1, midX, midY, displace / 2, segments, allowBranch);
+            buildBoltSegments(midX, midY, x2, y2, displace / 2, segments, allowBranch);
+
+            if (allowBranch && Math.random() < 0.26) {
+                const branchEndX = midX + (Math.random() - 0.5) * displace * 2.2;
+                const branchEndY = midY + Math.abs(y2 - y1) * (0.2 + Math.random() * 0.28);
+                buildBoltSegments(midX, midY, branchEndX, branchEndY, displace * 0.55, segments, false);
+            }
+        }
+
+        function spawnLightning(x1, y1, x2, y2, withImpact = true) {
+            const segments = [];
+            const dist = Math.hypot(x2 - x1, y2 - y1);
+            buildBoltSegments(x1, y1, x2, y2, Math.min(95, dist * 0.34), segments, true);
+
+            lightningBolts.push({
+                segments,
+                life: 1.0,
+                decay: 0.055 + Math.random() * 0.025,
+                lineWidth: 2.0 + Math.random() * 1.1
+            });
+
+            if (withImpact) {
+                triggerStormImpact(x2, y2, 1.0);
+            }
+        }
+
+        function triggerStormImpact(x, y, intensity = 1.0) {
+            lightningFlash.style.opacity = String(0.85 * intensity);
+            cloudSheetFlash.style.opacity = String(0.95 * intensity);
+            bgPoster.style.filter = 'contrast(1.24) saturate(1.36) brightness(1.18)';
+
+            setTimeout(() => {
+                lightningFlash.style.opacity = '0';
+                cloudSheetFlash.style.opacity = '0';
+                bgPoster.style.filter = 'contrast(1.07) saturate(1.14) brightness(0.94)';
+            }, 95);
+
+            shockwaves.push({
+                x,
+                y,
+                radius: 4,
+                maxRadius: Math.min(width, height) * 0.24 * intensity,
+                alpha: 0.9
+            });
+
+            arenaStage.classList.remove('shake-active');
+            void arenaStage.offsetWidth;
+            arenaStage.classList.add('shake-active');
+
+            audioEngine.playThunder();
+        }
+
+        // Autonomous Storm & Lightning Choreography
+        function scheduleStormChoreography() {
+            const nextDelay = 2400 + Math.random() * 2800;
+            setTimeout(() => {
+                if (width && height) {
+                    const roll = Math.random();
+                    if (roll < 0.42) {
+                        // 1. Jaw-to-Jaw Lion Clash Arc
+                        spawnLightning(
+                            width * (0.35 + Math.random() * 0.04),
+                            height * (0.34 + Math.random() * 0.03),
+                            width * (0.61 + Math.random() * 0.04),
+                            height * (0.34 + Math.random() * 0.03),
+                            true
+                        );
+                    } else if (roll < 0.76) {
+                        // 2. Cloud-to-Turf Lightning Strike on Wet Pitch
+                        const startX = width * (0.25 + Math.random() * 0.5);
+                        const endX = width * (0.2 + Math.random() * 0.6);
+                        const endY = height * (0.74 + Math.random() * 0.16);
+                        spawnLightning(startX, height * 0.16, endX, endY, true);
+                    } else {
+                        // 3. Distant Upper-Cloud Sheet Lightning
+                        cloudSheetFlash.style.opacity = '0.88';
+                        bgPoster.style.filter = 'contrast(1.16) saturate(1.24) brightness(1.08)';
+                        setTimeout(() => {
+                            cloudSheetFlash.style.opacity = '0';
+                            bgPoster.style.filter = 'contrast(1.07) saturate(1.14) brightness(0.94)';
+                        }, 130);
+                        audioEngine.playThunder();
+                    }
+                }
+                scheduleStormChoreography();
+            }, nextDelay);
+        }
+
+        // ==========================================
+        // 3. LIVING BREATHING & WEATHER RENDER LOOP
+        // ==========================================
+        let startTime = performance.now();
+
+        function animate(now) {
+            const t = (now - startTime) * 0.001;
+            ctx.clearRect(0, 0, width, height);
+
+            // Multi-frequency Living Breathing Curves
+            const primaryBreath = Math.sin(t * 1.35);           // ~4.6s deep chest rhythm
+            const secondaryDrift = Math.cos(t * 0.62);          // slow atmospheric sway
+            const leftLionBreath = 0.5 + 0.5 * Math.sin(t * 1.55);
+            const rightLionBreath = 0.5 + 0.5 * Math.sin(t * 1.55 + Math.PI * 0.65);
+
+            // Update Dual Lion Aura Breathing
+            if (lionAuraLeft && lionAuraRight) {
+                lionAuraLeft.style.opacity = (0.44 + leftLionBreath * 0.52).toFixed(3);
+                lionAuraLeft.style.transform = `scale(${(0.96 + leftLionBreath * 0.07).toFixed(4)})`;
+                lionAuraRight.style.opacity = (0.48 + rightLionBreath * 0.52).toFixed(3);
+                lionAuraRight.style.transform = `scale(${(0.96 + rightLionBreath * 0.07).toFixed(4)})`;
+            }
+
+            // Occasionally exhale glowing sparks from lion jaws at peak breath
+            if (leftLionBreath > 0.96 && Math.random() < 0.28 && embers.length < 95) {
+                embers.push(createEmber(false, { side: 'left', x: width * 0.39, y: height * 0.35 }));
+            }
+            if (rightLionBreath > 0.96 && Math.random() < 0.28 && embers.length < 95) {
+                embers.push(createEmber(false, { side: 'right', x: width * 0.61, y: height * 0.35 }));
+            }
+
+            // Smooth 3D Parallax + Autonomous Camera Breathing Zoom
+            mouse.x += (mouse.targetX - mouse.x) * 0.08;
+            mouse.y += (mouse.targetY - mouse.y) * 0.08;
+            const breathScale = 1.03 + primaryBreath * 0.014;
+            const rotY = mouse.x * 3.8 + secondaryDrift * 0.9;
+            const rotX = -mouse.y * 3.0 + primaryBreath * 0.65;
+            const transX = -mouse.x * 10 + secondaryDrift * 3.5;
+            const transY = -mouse.y * 12 + primaryBreath * 3.0;
+            arenaStage.style.transform = `scale(${breathScale.toFixed(4)}) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translate3d(${transX.toFixed(1)}px, ${transY.toFixed(1)}px, 0)`;
+
+            // A. Volumetric Stadium Smoke & Mist
+            for (const cloud of smokeClouds) {
+                cloud.x += cloud.vx;
+                cloud.phase += 0.012;
+                if (cloud.x < -cloud.radius) cloud.x = width + cloud.radius;
+                if (cloud.x > width + cloud.radius) cloud.x = -cloud.radius;
+
+                const alpha = cloud.baseAlpha * (0.75 + 0.25 * Math.sin(cloud.phase));
+                const grad = ctx.createRadialGradient(cloud.x, cloud.y, 0, cloud.x, cloud.y, cloud.radius);
+                grad.addColorStop(0, `rgba(${cloud.tint}, ${alpha.toFixed(3)})`);
+                grad.addColorStop(1, `rgba(${cloud.tint}, 0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // B. Slanted Driving Rain & Wet-Turf Splashes
+            ctx.lineCap = 'round';
+            for (const drop of raindrops) {
+                drop.x += drop.wind;
+                drop.y += drop.speed;
+
+                ctx.strokeStyle = `rgba(215, 232, 255, ${drop.opacity.toFixed(3)})`;
+                ctx.lineWidth = 1.1;
+                ctx.beginPath();
+                ctx.moveTo(drop.x, drop.y);
+                ctx.lineTo(drop.x - drop.wind * 1.4, drop.y - drop.len);
+                ctx.stroke();
+
+                if (drop.y > height * (0.71 + Math.random() * 0.27)) {
+                    if (Math.random() < 0.28 && splashes.length < 60) {
+                        splashes.push({
+                            x: drop.x,
+                            y: drop.y,
+                            r: 1,
+                            maxR: 5 + Math.random() * 6,
+                            alpha: 0.45
+                        });
+                    }
+                    drop.x = Math.random() * width * 1.25;
+                    drop.y = -drop.len;
+                }
+            }
+
+            // Render expanding wet-turf rain splash ripples
+            for (let i = splashes.length - 1; i >= 0; i--) {
+                const sp = splashes[i];
+                sp.r += 0.45;
+                sp.alpha -= 0.028;
+                if (sp.alpha <= 0 || sp.r >= sp.maxR) {
+                    splashes.splice(i, 1);
+                    continue;
+                }
+                ctx.strokeStyle = `rgba(255, 165, 180, ${sp.alpha.toFixed(3)})`;
+                ctx.lineWidth = 0.85;
+                ctx.beginPath();
+                ctx.ellipse(sp.x, sp.y, sp.r * 1.6, sp.r * 0.55, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // C. Rising Crimson & Gold Embers + Lion Mane Electric Veins
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+
+            // Subtle breathing electric capillary veins along both lions' manes
+            for (const vein of maneVeins) {
+                const lionLevel = vein.side === 'left' ? leftLionBreath : rightLionBreath;
+                const veinPulse = Math.max(0, Math.sin(t * 2.8 + vein.phase)) * lionLevel;
+                if (veinPulse <= 0.12) continue;
+
+                ctx.strokeStyle = vein.side === 'left'
+                    ? `rgba(225, 242, 255, ${(veinPulse * 0.48).toFixed(3)})`
+                    : `rgba(255, 42, 68, ${(veinPulse * 0.58).toFixed(3)})`;
+                ctx.lineWidth = 1.2 + veinPulse * 1.1;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = vein.side === 'left' ? '#ffffff' : '#ff1e38';
+                ctx.beginPath();
+                vein.pts.forEach((pt, idx) => {
+                    const jitterX = Math.sin(t * 9 + idx + vein.phase) * 2.2;
+                    const jitterY = Math.cos(t * 8 + idx) * 1.8;
+                    const px = pt[0] * width + jitterX;
+                    const py = pt[1] * height + jitterY;
+                    if (idx === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+                ctx.stroke();
+            }
+
+            for (let i = 0; i < embers.length; i++) {
+                const e = embers[i];
+                e.wobble += 0.05;
+                e.x += e.vx + Math.sin(e.wobble) * 0.4;
+                e.y += e.vy;
+                e.alpha -= 0.0024;
+
+                if (e.y < height * 0.14 || e.alpha <= 0) {
+                    embers[i] = createEmber(false);
+                    continue;
+                }
+
+                let color, glow;
+                if (e.colorType > 0.32) {
+                    color = `rgba(255, 34, 60, ${e.alpha})`;
+                    glow = '#ff1e38';
+                } else if (e.colorType > 0.14) {
+                    color = `rgba(255, 195, 110, ${e.alpha})`;
+                    glow = '#ffaa33';
+                } else {
+                    color = `rgba(240, 248, 255, ${e.alpha})`;
+                    glow = '#ffffff';
+                }
+
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 9;
+                ctx.shadowColor = glow;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // D. Procedural Forked Lightning
+            for (let i = lightningBolts.length - 1; i >= 0; i--) {
+                const bolt = lightningBolts[i];
+                bolt.life -= bolt.decay;
+                if (bolt.life <= 0) {
+                    lightningBolts.splice(i, 1);
+                    continue;
+                }
+
+                ctx.strokeStyle = `rgba(255, 25, 55, ${bolt.life * 0.88})`;
+                ctx.lineWidth = bolt.lineWidth * 3.2;
+                ctx.shadowBlur = 22;
+                ctx.shadowColor = '#ff1e38';
+                ctx.beginPath();
+                for (const seg of bolt.segments) {
+                    ctx.moveTo(seg.x1, seg.y1);
+                    ctx.lineTo(seg.x2, seg.y2);
+                }
+                ctx.stroke();
+
+                ctx.strokeStyle = `rgba(255, 246, 250, ${bolt.life})`;
+                ctx.lineWidth = bolt.lineWidth;
+                ctx.stroke();
+            }
+
+            // E. Shockwaves
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                const sw = shockwaves[i];
+                sw.radius += (sw.maxRadius - sw.radius) * 0.15;
+                sw.alpha -= 0.036;
+                if (sw.alpha <= 0) {
+                    shockwaves.splice(i, 1);
+                    continue;
+                }
+                ctx.strokeStyle = `rgba(255, 45, 75, ${sw.alpha})`;
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            requestAnimationFrame(animate);
+        }
+
+        // ==========================================
+        // 4. INTERACTIVE CONTROLS
+        // ==========================================
+        const btnRatio = document.getElementById('btn-ratio');
+        const ratioLabel = document.getElementById('ratio-label');
+        btnRatio.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isFull = stageWrapper.classList.toggle('immersive-fill');
+            ratioLabel.textContent = isFull ? '满屏沉浸' : '9:16 竖屏';
+            setTimeout(resizeStageCanvas, 360);
+        });
+
+        const btnAudio = document.getElementById('btn-audio');
+        const audioLabel = document.getElementById('audio-label');
+        const iconSoundOff = document.getElementById('icon-sound-off');
+        const iconSoundOn = document.getElementById('icon-sound-on');
+
+        btnAudio.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const active = audioEngine.toggle();
+            audioLabel.textContent = active ? '音效:开' : '音效:关';
+            iconSoundOff.classList.toggle('hidden', active);
+            iconSoundOn.classList.toggle('hidden', !active);
+            if (active) audioEngine.playThunder();
+        });
+
+        const btnToggleHud = document.getElementById('btn-toggle-hud');
+        const hudToggleLabel = document.getElementById('hud-toggle-label');
+        const gameHud = document.getElementById('game-hud');
+
+        btnToggleHud.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = gameHud.classList.toggle('hud-hidden');
+            hudToggleLabel.textContent = isHidden ? '显示UI' : '隐藏UI';
+        });
+
+        // Kick Off / Overdrive Lion Clash
+        const btnKickoff = document.getElementById('btn-kickoff');
+        const matchToast = document.getElementById('match-toast');
+        let toastTimeout;
+
+        btnKickoff.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Twin lion-to-pitch overdrive lightning strikes
+            spawnLightning(width * 0.28, height * 0.34, width * 0.5, height * 0.72, true);
+            setTimeout(() => {
+                spawnLightning(width * 0.72, height * 0.34, width * 0.5, height * 0.72, true);
+            }, 130);
+
+            matchToast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                matchToast.classList.remove('show');
+            }, 3400);
+        });
+
+        // Tap/Click anywhere on the 9:16 stage to summon lightning
+        stageWrapper.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            const rect = stageWrapper.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            const skyOriginX = clickX < width / 2 ? width * 0.28 : width * 0.72;
+            const skyOriginY = height * 0.34;
+            spawnLightning(skyOriginX, skyOriginY, clickX, clickY, true);
+        });
+
+        window.onload = function () {
+            resizeStageCanvas();
+            requestAnimationFrame(animate);
+            setTimeout(() => {
+                spawnLightning(width * 0.34, height * 0.35, width * 0.66, height * 0.35, true);
+            }, 650);
+            scheduleStormChoreography();
+        };
+    </script>
+</body>
+</html>
