@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promised Happiness · 林间琴音</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0b1911;
+      font-family: 'Inter', 'Noto Serif SC', sans-serif;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .serif-title {
+      font-family: 'Noto Serif SC', serif;
+    }
+    /* 美化原生 audio 播放器在深绿磨砂背景下的视觉表现 */
+    audio {
+      height: 36px;
+      border-radius: 999px;
+      outline: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+    }
+    audio::-webkit-media-controls-panel {
+      background-color: rgba(236, 253, 245, 0.88);
+    }
+  </style>
+</head>
+<body class="relative text-emerald-50">
+
+  <!-- 主画布：绘制静谧森林、光影、萤火与弹钢琴的卡通小男孩 -->
+  <canvas id="sceneCanvas"></canvas>
+
+  <!-- 顶部诗意标题与本地音频备选入口 -->
+  <header class="absolute top-0 left-0 w-full p-5 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center pointer-events-none gap-3 z-10">
+    <div class="bg-emerald-950/40 backdrop-blur-md border border-emerald-200/15 px-5 py-3 rounded-2xl shadow-lg">
+      <div class="flex items-center gap-2 text-xs text-emerald-300/85 tracking-widest uppercase mb-1">
+        <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="statusText">等待琴声响起</span>
+      </div>
+      <h1 class="serif-title text-xl sm:text-2xl font-semibold text-emerald-50 tracking-wide">
+        Promised Happiness
+      </h1>
+      <p class="text-xs text-emerald-200/75 mt-0.5">静谧绿野 · 林间钢琴独奏</p>
+    </div>
+
+    <!-- 极简本地 MP3 备选按钮（以防私有仓库外链无法加载） -->
+    <div class="pointer-events-auto flex items-center gap-2">
+      <label for="localAudioInput" class="cursor-pointer bg-emerald-950/45 hover:bg-emerald-900/65 backdrop-blur-md border border-emerald-200/20 text-emerald-100 text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md" title="若 GitHub 私有仓库外链无法直接访问，可选择本地 MP3 文件播放">
+        <svg class="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+        </svg>
+        <span id="localFileLabel">导入本地 MP3</span>
+      </label>
+      <input id="localAudioInput" type="file" accept="audio/*" class="hidden" />
+    </div>
+  </header>
+
+  <!-- 浏览器拦截自动播放时的轻柔引导浮层（首次点击屏幕任意处即自动隐藏并播放） -->
+  <div id="autoplayPrompt" class="fixed inset-0 z-20 flex items-center justify-center pointer-events-none transition-opacity duration-500 opacity-0">
+    <div class="bg-emerald-950/60 backdrop-blur-md border border-emerald-200/25 px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 text-emerald-50 text-sm animate-bounce">
+      <span class="text-lg">🎹</span>
+      <span>轻触画面任意位置，开启林间钢琴演奏</span>
+    </div>
+  </div>
+
+  <!-- 提示消息横幅（用于外链受限等温和提示，替代 alert） -->
+  <div id="toastBanner" class="fixed top-24 left-1/2 -translate-x-1/2 z-30 max-w-md w-[90%] bg-amber-950/85 border border-amber-400/30 backdrop-blur-md text-amber-100 text-xs sm:text-sm px-4 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-start gap-2.5">
+    <svg class="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <div class="flex-1">
+      <p id="toastMessage" class="leading-relaxed"></p>
+    </div>
+    <button id="closeToastBtn" class="text-amber-300/70 hover:text-amber-100 ml-1 cursor-pointer">✕</button>
+  </div>
+
+  <!-- 底部半透明磨砂控制栏：直接嵌入指定的原生 <audio controls autoplay loop> 标签 -->
+  <footer class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[94%] max-w-xl z-20">
+    <div class="bg-emerald-950/50 backdrop-blur-xl border border-emerald-200/20 rounded-3xl px-4 py-3 sm:px-6 sm:py-3.5 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 shrink-0">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-300/80"></span>
+        <span class="text-xs sm:text-sm font-medium text-emerald-100 tracking-wide">Promised Happiness</span>
+      </div>
+      <audio id="bgMusic" controls autoplay loop src="https://github.com/wengyijun/wengyijun.github.io/releases/download/music2.0/1.mp3" class="w-full sm:w-auto flex-1 max-w-sm">
+        您的浏览器不支持 audio 标签。
+      </audio>
+    </div>
+  </footer>
+
+  <script>
+    /**
+     * 林间钢琴曲 - 卡通动画与音频双向同步逻辑
+     */
+    const canvas = document.getElementById('sceneCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const bgMusic = document.getElementById('bgMusic');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const autoplayPrompt = document.getElementById('autoplayPrompt');
+    const localAudioInput = document.getElementById('localAudioInput');
+    const localFileLabel = document.getElementById('localFileLabel');
+    const toastBanner = document.getElementById('toastBanner');
+    const toastMessage = document.getElementById('toastMessage');
+    const closeToastBtn = document.getElementById('closeToastBtn');
+
+    // 播放状态（与原生 <audio> 双向同步）
+    let isPlaying = false;
+    let needsUserGesture = false;
+
+    // 场景动态元素集合
+    let width = 0;
+    let height = 0;
+    let fireflies = [];
+    let leaves = [];
+    let notes = [];
+    let grassBlades = [];
+    let time = 0;
+
+    // 钢琴黑白琴键状态（用于动画按压效果）
+    const whiteKeyCount = 14;
+    let activeWhiteKey = -1;
+    let activeBlackKey = -1;
+    let keyTimer = 0;
+
+    // 轻提示框控制
+    function showToast(msg, duration = 8000) {
+      toastMessage.textContent = msg;
+      toastBanner.classList.remove('opacity-0', 'pointer-events-none');
+      toastBanner.classList.add('opacity-100');
+      if (duration > 0) {
+        clearTimeout(toastBanner._timer);
+        toastBanner._timer = setTimeout(hideToast, duration);
+      }
+    }
+
+    function hideToast() {
+      toastBanner.classList.add('opacity-0', 'pointer-events-none');
+      toastBanner.classList.remove('opacity-100');
+    }
+
+    closeToastBtn.addEventListener('click', hideToast);
+
+    // 同步动画与 UI 播放状态
+    function syncPlayingState(playing) {
+      isPlaying = playing;
+      if (playing) {
+        statusDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
+        statusText.textContent = '正在林间演奏中...';
+        autoplayPrompt.classList.add('opacity-0');
+        needsUserGesture = false;
+      } else {
+        statusDot.className = 'w-2 h-2 rounded-full bg-emerald-200/50';
+        statusText.textContent = '琴声已暂停';
+        activeWhiteKey = -1;
+        activeBlackKey = -1;
+      }
+    }
+
+    // 监听原生 audio 的 play / pause / error 事件
+    bgMusic.addEventListener('play', () => syncPlayingState(true));
+    bgMusic.addEventListener('pause', () => syncPlayingState(false));
+    bgMusic.addEventListener('ended', () => syncPlayingState(false));
+
+    bgMusic.addEventListener('error', () => {
+      syncPlayingState(false);
+      autoplayPrompt.classList.add('opacity-0');
+      showToast('提示：GitHub 音频链接加载受限，您可以点击右上角“导入本地 MP3”播放音频。', 10000);
+    });
+
+    // 尝试自动播放，若被浏览器 Autoplay Policy 拦截则引导首次交互触发
+    async function tryAutoPlay() {
+      try {
+        await bgMusic.play();
+        syncPlayingState(true);
+      } catch (err) {
+        // 浏览器策略限制未交互自动播放
+        needsUserGesture = true;
+        autoplayPrompt.classList.remove('opacity-0');
+        statusText.textContent = '轻触画面开启自动播放';
+      }
+    }
+
+    // 全局首次交互监听：点击、触摸或按键时立即触发播放
+    function handleFirstInteraction() {
+      if (!needsUserGesture) return;
+      bgMusic.play().then(() => {
+        syncPlayingState(true);
+      }).catch(() => {
+        // 若因资源本身错误无法播放，则隐藏提示
+        autoplayPrompt.classList.add('opacity-0');
+      });
+      needsUserGesture = false;
+    }
+
+    window.addEventListener('pointerdown', handleFirstInteraction, { passive: true });
+    window.addEventListener('keydown', handleFirstInteraction, { passive: true });
+
+    // 本地 MP3 文件选择 fallback
+    localAudioInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const objectUrl = URL.createObjectURL(file);
+      bgMusic.src = objectUrl;
+      localFileLabel.textContent = file.name.length > 14 ? file.name.slice(0, 12) + '...' : file.name;
+      hideToast();
+      bgMusic.play().then(() => syncPlayingState(true)).catch(() => {});
+    });
+
+    /**
+     * 初始化 Canvas 尺寸与自然粒子系统
+     */
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      initGrass();
+    }
+
+    function initParticles() {
+      fireflies = [];
+      const count = Math.min(55, Math.floor((window.innerWidth * window.innerHeight) / 22000));
+      for (let i = 0; i < count; i++) {
+        fireflies.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight * 0.85,
+          r: 1.5 + Math.random() * 2.5,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.25,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.02 + Math.random() * 0.03
+        });
+      }
+
+      leaves = [];
+      for (let i = 0; i < 16; i++) {
+        leaves.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          size: 4 + Math.random() * 5,
+          vx: 0.2 + Math.random() * 0.4,
+          vy: 0.35 + Math.random() * 0.45,
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.03
+        });
+      }
+    }
+
+    function initGrass() {
+      grassBlades = [];
+      const bladeCount = Math.floor(width / 7);
+      for (let i = 0; i < bladeCount; i++) {
+        grassBlades.push({
+          x: (i / bladeCount) * width + (Math.random() - 0.5) * 10,
+          h: 18 + Math.random() * 34,
+          lean: (Math.random() - 0.5) * 0.3,
+          phase: Math.random() * Math.PI * 2,
+          color: Math.random() > 0.4 ? '#15472b' : '#1f5e39'
+        });
+      }
+    }
+
+    // 从钢琴上方生成飘浮的音符
+    function spawnMusicNote() {
+      const pianoX = width * 0.52;
+      const groundY = height * 0.77;
+      const symbols = ['♪', '♫', '♩', '♬'];
+      notes.push({
+        x: pianoX + (Math.random() - 0.5) * 70,
+        y: groundY - 95,
+        vx: (Math.random() - 0.4) * 0.65,
+        vy: -0.75 - Math.random() * 0.5,
+        alpha: 1,
+        size: 17 + Math.random() * 8,
+        symbol: symbols[Math.floor(Math.random() * symbols.length)],
+        wobble: Math.random() * Math.PI * 2
+      });
+    }
+
+    /**
+     * 绘制静谧绿色森林背景、丁达尔光束与林间草地
+     */
+    function drawBackground() {
+      // 1. 鼠尾草绿与森林绿渐层天空/林间背景
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+      skyGrad.addColorStop(0, '#0c2418');
+      skyGrad.addColorStop(0.45, '#17422b');
+      skyGrad.addColorStop(0.78, '#23593a');
+      skyGrad.addColorStop(1, '#0e291b');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. 穿过树冠的暖阳丁达尔光束
+      ctx.save();
+      const sunX = width * 0.32;
+      const sunY = height * 0.1;
+      const sunGlow = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, Math.max(width, height) * 0.65);
+      sunGlow.addColorStop(0, 'rgba(236, 252, 203, 0.24)');
+      sunGlow.addColorStop(0.45, 'rgba(134, 239, 172, 0.09)');
+      sunGlow.addColorStop(1, 'rgba(12, 36, 24, 0)');
+      ctx.fillStyle = sunGlow;
+      ctx.fillRect(0, 0, width, height);
+
+      for (let i = 0; i < 4; i++) {
+        const raySway = Math.sin(time * 0.35 + i) * 16;
+        const rayGrad = ctx.createLinearGradient(sunX + i * 85, 0, sunX + i * 150 + 180, height * 0.85);
+        rayGrad.addColorStop(0, 'rgba(254, 249, 195, 0.09)');
+        rayGrad.addColorStop(1, 'rgba(254, 249, 195, 0)');
+        ctx.fillStyle = rayGrad;
+        ctx.beginPath();
+        ctx.moveTo(sunX + i * 65 + raySway, 0);
+        ctx.lineTo(sunX + i * 65 + 75 + raySway, 0);
+        ctx.lineTo(sunX + i * 155 + 250 + raySway, height * 0.88);
+        ctx.lineTo(sunX + i * 155 + 85 + raySway, height * 0.88);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 3. 远景层叠森林树影
+      drawTreeSilhouettes(0.42, '#0f301f', 7, 0.5);
+      drawTreeSilhouettes(0.55, '#153d28', 5, 0.8);
+
+      // 4. 森林草地山坡
+      const groundY = height * 0.77;
+      const hillGrad = ctx.createLinearGradient(0, groundY - 40, 0, height);
+      hillGrad.addColorStop(0, '#256340');
+      hillGrad.addColorStop(0.42, '#18472c');
+      hillGrad.addColorStop(1, '#0b2114');
+      ctx.fillStyle = hillGrad;
+
+      ctx.beginPath();
+      ctx.moveTo(0, groundY + 14);
+      ctx.bezierCurveTo(width * 0.3, groundY - 22, width * 0.7, groundY - 18, width, groundY + 16);
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.closePath();
+      ctx.fill();
+
+      // 钢琴与少年身下的暖金色林间光斑
+      const spotGrad = ctx.createRadialGradient(width * 0.5, groundY + 10, 10, width * 0.5, groundY + 10, 210);
+      spotGrad.addColorStop(0, 'rgba(217, 249, 157, 0.22)');
+      spotGrad.addColorStop(1, 'rgba(217, 249, 157, 0)');
+      ctx.fillStyle = spotGrad;
+      ctx.beginPath();
+      ctx.ellipse(width * 0.5, groundY + 10, 210, 38, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawTreeSilhouettes(scaleFactor, color, count, swayAmp) {
+      ctx.fillStyle = color;
+      for (let i = 0; i <= count; i++) {
+        const tx = (i / count) * width + Math.sin(i * 77) * 30;
+        const trunkW = 16 * scaleFactor + (i % 3) * 6;
+        const sway = Math.sin(time * 0.8 + i) * swayAmp * 4;
+
+        ctx.fillRect(tx - trunkW / 2, height * 0.14, trunkW, height * 0.66);
+
+        ctx.beginPath();
+        ctx.arc(tx + sway, height * 0.21, 65 * scaleFactor, 0, Math.PI * 2);
+        ctx.arc(tx - 40 * scaleFactor + sway, height * 0.27, 50 * scaleFactor, 0, Math.PI * 2);
+        ctx.arc(tx + 42 * scaleFactor + sway, height * 0.26, 52 * scaleFactor, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    /**
+     * 绘制林间空地上的温润木质立式钢琴与正在弹奏的卡通小男孩
+     * 构图采用柔和治愈的2D侧面斜视角：小男孩坐在左侧钢琴凳上，面向右侧的木质立式钢琴弹奏
+     */
+    function drawPianoAndBoy() {
+      const cx = width * 0.5;
+      const groundY = height * 0.77;
+      // 自适应缩放，保证手机与桌面端比例和谐
+      const scale = Math.min(1.15, Math.max(0.75, width / 950));
+
+      // 更新琴键跳动节奏
+      if (isPlaying) {
+        keyTimer += 0.016;
+        if (keyTimer > 0.22) {
+          keyTimer = 0;
+          activeWhiteKey = Math.floor(Math.random() * whiteKeyCount);
+          activeBlackKey = Math.random() > 0.35 ? Math.floor(Math.random() * (whiteKeyCount - 1)) : -1;
+        }
+      }
+
+      ctx.save();
+      ctx.translate(cx, groundY);
+      ctx.scale(scale, scale);
+
+      // 1. 地面柔和阴影
+      ctx.fillStyle = 'rgba(5, 20, 12, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(5, 12, 145, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ==========================================
+      // 2. 绘制温润原木色古典立式钢琴（位于画面中偏右）
+      // ==========================================
+      ctx.save();
+      ctx.translate(42, 0);
+
+      // 钢琴主体背板与木质琴箱（胡桃木暖棕色）
+      ctx.fillStyle = '#5c341d';
+      ctx.strokeStyle = '#3b1f0f';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.roundRect(-45, -124, 96, 132, [10, 10, 3, 3]);
+      ctx.fill();
+      ctx.stroke();
+
+      // 钢琴上半部装饰木框镶板
+      ctx.fillStyle = '#734226';
+      ctx.beginPath();
+      ctx.roundRect(-34, -114, 78, 46, 6);
+      ctx.fill();
+      ctx.strokeStyle = '#8f5534';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 顶盖线脚
+      ctx.fillStyle = '#472613';
+      ctx.beginPath();
+      ctx.roundRect(-49, -129, 104, 8, 4);
+      ctx.fill();
+
+      // 谱架与翻开的白色乐谱
+      ctx.fillStyle = '#4a2815';
+      ctx.fillRect(-38, -74, 34, 4);
+      // 乐谱纸张
+      ctx.save();
+      ctx.translate(-22, -74);
+      ctx.rotate(-0.18);
+      ctx.fillStyle = '#fefae0';
+      ctx.strokeStyle = '#d4a373';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-4, -26, 26, 26, 2);
+      ctx.fill();
+      ctx.stroke();
+      // 乐谱上的五线谱细线
+      ctx.strokeStyle = '#9c6644';
+      ctx.lineWidth = 0.8;
+      for (let l = -20; l <= -6; l += 4.5) {
+        ctx.beginPath();
+        ctx.moveTo(0, l);
+        ctx.lineTo(18, l);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 键盘托架与前腿支撑
+      ctx.fillStyle = '#5c341d';
+      ctx.beginPath();
+      ctx.roundRect(-64, -54, 114, 13, 4);
+      ctx.fill();
+      // 前方优雅雕花琴腿
+      ctx.fillStyle = '#4a2815';
+      ctx.beginPath();
+      ctx.roundRect(-58, -41, 10, 49, 3);
+      ctx.fill();
+
+      // 底部黄铜踏板
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath();
+      ctx.roundRect(-24, 3, 12, 4, 2);
+      ctx.roundRect(-8, 3, 12, 4, 2);
+      ctx.fill();
+
+      // 可见黑白琴键特写区域（向外延伸的琴键台，方便看到手指按压琴键）
+      const kbX = -62;
+      const kbY = -61;
+      const kbW = 68;
+      const kbH = 9;
+
+      // 琴键底座
+      ctx.fillStyle = '#2b160a';
+      ctx.fillRect(kbX - 2, kbY - 1, kbW + 4, kbH + 2);
+
+      // 绘制白键（演奏时对应琴键微微下沉）
+      const wKeyW = kbW / whiteKeyCount;
+      for (let k = 0; k < whiteKeyCount; k++) {
+        const isPressed = isPlaying && (k === activeWhiteKey || k === (activeWhiteKey + 4) % whiteKeyCount);
+        const pressY = isPressed ? 2 : 0;
+        ctx.fillStyle = isPressed ? '#d1fae5' : '#ffffff';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 0.6;
+        ctx.fillRect(kbX + k * wKeyW, kbY + pressY, wKeyW - 0.6, kbH - pressY * 0.4);
+        ctx.strokeRect(kbX + k * wKeyW, kbY + pressY, wKeyW - 0.6, kbH - pressY * 0.4);
+      }
+
+      // 绘制黑键
+      for (let k = 0; k < whiteKeyCount - 1; k++) {
+        if (k % 7 === 2 || k % 7 === 6) continue;
+        const isBlackPressed = isPlaying && k === activeBlackKey;
+        const pressY = isBlackPressed ? 1.5 : 0;
+        ctx.fillStyle = isBlackPressed ? '#065f46' : '#1e293b';
+        ctx.fillRect(kbX + (k + 0.68) * wKeyW, kbY + pressY, wKeyW * 0.62, kbH * 0.58);
+      }
+
+      // 钢琴顶部的森林小盆栽装饰（增添静谧自然气息）
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath();
+      ctx.moveTo(14, -129);
+      ctx.lineTo(28, -129);
+      ctx.lineTo(25, -140);
+      ctx.lineTo(17, -140);
+      ctx.closePath();
+      ctx.fill();
+      // 小绿植叶片
+      ctx.fillStyle = '#4ade80';
+      ctx.beginPath();
+      ctx.ellipse(17, -144, 6, 3, -0.5, 0, Math.PI * 2);
+      ctx.ellipse(25, -144, 6, 3, 0.5, 0, Math.PI * 2);
+      ctx.ellipse(21, -147, 4, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore(); // 结束钢琴绘制
+
+      // ==========================================
+      // 3. 绘制钢琴凳与弹奏钢琴的卡通小男孩（位于画面中偏左，面向右侧钢琴）
+      // ==========================================
+      ctx.save();
+      ctx.translate(-56, 0);
+
+      // 木质钢琴凳
+      ctx.fillStyle = '#5c341d';
+      ctx.fillRect(-18, -32, 6, 40);
+      ctx.fillRect(12, -32, 6, 40);
+      ctx.fillRect(-14, -16, 28, 4);
+      // 软垫凳面（森林绿绒布）
+      ctx.fillStyle = '#2d6a4f';
+      ctx.beginPath();
+      ctx.roundRect(-22, -38, 44, 8, 4);
+      ctx.fill();
+
+      // 律动参数：播放时身体随旋律前倾微晃，双手在琴键上灵动起伏
+      const breathe = Math.sin(time * 2.2) * 1.4;
+      const bodyLean = isPlaying ? 0.14 + Math.sin(time * 3.8) * 0.045 : 0.04 + Math.sin(time * 1.2) * 0.01;
+      const headNod = isPlaying ? Math.sin(time * 7.6) * 0.06 : 0;
+
+      // 双腿与小皮鞋（自然坐在凳子上踩向踏板方向）
+      ctx.strokeStyle = '#263849';
+      ctx.lineWidth = 11;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // 里侧腿
+      ctx.beginPath();
+      ctx.moveTo(6, -34);
+      ctx.lineTo(24, -22);
+      ctx.lineTo(32, 4);
+      ctx.stroke();
+
+      // 外侧腿
+      ctx.beginPath();
+      ctx.moveTo(2, -33);
+      ctx.lineTo(20, -18);
+      ctx.lineTo(25, 7);
+      ctx.stroke();
+
+      // 棕色小鞋
+      ctx.fillStyle = '#5c3a21';
+      ctx.beginPath();
+      ctx.ellipse(36, 5, 7.5, 4, 0.1, 0, Math.PI * 2);
+      ctx.ellipse(29, 8, 7.5, 4, 0.05, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 上半身躯干（随音乐前倾微晃）
+      ctx.save();
+      ctx.translate(0, -34);
+      ctx.rotate(bodyLean);
+
+      // 里侧手臂（先绘制在身体后方，伸向钢琴高音区琴键）
+      const leftHandBounce = isPlaying ? Math.sin(time * 11 + 1.5) * 3.8 : 0;
+      ctx.strokeStyle = '#d8e2dc';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(6, -28);
+      ctx.quadraticCurveTo(22, -22, 42, -26 + leftHandBounce);
+      ctx.stroke();
+      // 里侧小手
+      ctx.fillStyle = '#f4cbb2';
+      ctx.beginPath();
+      ctx.ellipse(45, -26 + leftHandBounce, 4.8, 3.2, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 暖米白衬衫 + 鼠尾草绿针织背心
+      ctx.fillStyle = '#e9edc9';
+      ctx.beginPath();
+      ctx.roundRect(-13, -38 + breathe * 0.3, 26, 40, 12);
+      ctx.fill();
+
+      ctx.fillStyle = '#2d6a4f';
+      ctx.beginPath();
+      ctx.roundRect(-12, -34 + breathe * 0.3, 24, 33, 9);
+      ctx.fill();
+
+      // 衬衫小翻领
+      ctx.fillStyle = '#fefae0';
+      ctx.beginPath();
+      ctx.moveTo(2, -38 + breathe * 0.3);
+      ctx.lineTo(11, -33 + breathe * 0.3);
+      ctx.lineTo(5, -28 + breathe * 0.3);
+      ctx.closePath();
+      ctx.fill();
+
+      // 头部（侧脸朝向右侧钢琴，陶醉微笑）
+      ctx.save();
+      ctx.translate(3, -52 + breathe * 0.4);
+      ctx.rotate(headNod);
+
+      // 脸庞
+      ctx.fillStyle = '#f4cbb2';
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 侧脸腮红
+      ctx.fillStyle = 'rgba(235, 130, 110, 0.35)';
+      ctx.beginPath();
+      ctx.arc(7, 4, 3.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 弯弯的闭眼与微笑（侧面视角）
+      ctx.strokeStyle = '#4a3222';
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(7, -1, 3, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(9, 5, 3, 0.2 * Math.PI, 0.8 * Math.PI);
+      ctx.stroke();
+
+      // 深棕色蓬松卡通短发
+      ctx.fillStyle = '#2b1d14';
+      ctx.beginPath();
+      ctx.arc(-2, -3, 17.5, Math.PI * 0.55, Math.PI * 2.02);
+      ctx.quadraticCurveTo(12, -6, 6, -4);
+      ctx.quadraticCurveTo(0, -8, -4, 0);
+      ctx.quadraticCurveTo(-6, 7, -12, 8);
+      ctx.fill();
+
+      // 小耳朵
+      ctx.fillStyle = '#f4cbb2';
+      ctx.beginPath();
+      ctx.arc(-4, 2, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 随微风轻摆的一缕发丝
+      const hairSway = Math.sin(time * 3.2) * 2.5;
+      ctx.fillStyle = '#2b1d14';
+      ctx.beginPath();
+      ctx.moveTo(-4, -19);
+      ctx.quadraticCurveTo(-11 - hairSway, -27, -15 - hairSway, -21);
+      ctx.quadraticCurveTo(-9, -20, -6, -18);
+      ctx.fill();
+
+      ctx.restore(); // 结束头部
+
+      // 外侧手臂（在身体前方，在琴键上灵动上下弹奏）
+      const rightHandBounce = isPlaying ? Math.cos(time * 10.5) * 4.2 : 0;
+      ctx.strokeStyle = '#e9edc9';
+      ctx.lineWidth = 7.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-2, -27);
+      ctx.quadraticCurveTo(10, -14, 36, -23 + rightHandBounce);
+      ctx.stroke();
+
+      // 外侧弹奏的小手与手指动作
+      ctx.fillStyle = '#f4cbb2';
+      ctx.beginPath();
+      ctx.ellipse(39, -23 + rightHandBounce, 5.2, 3.4, 0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore(); // 结束上半身
+      ctx.restore(); // 结束小男孩
+      ctx.restore(); // 结束整体居中缩放
+    }
+
+    /**
+     * 绘制前景摇曳的青草、飘落绿叶、萤火微光与音符
+     */
+    function drawForegroundAndParticles() {
+      const groundY = height * 0.77;
+
+      // 1. 前景青草随风摇曳
+      for (let i = 0; i < grassBlades.length; i++) {
+        const b = grassBlades[i];
+        const baseY = groundY + 12 + (i % 5) * 14;
+        if (baseY > height) continue;
+        const wind = Math.sin(time * 1.8 + b.phase + b.x * 0.01) * 8;
+
+        ctx.strokeStyle = b.color;
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(b.x, baseY);
+        ctx.quadraticCurveTo(b.x + wind * 0.5, baseY - b.h * 0.5, b.x + wind + b.lean * 12, baseY - b.h);
+        ctx.stroke();
+      }
+
+      // 2. 林间萤火微光
+      for (const f of fireflies) {
+        f.x += f.vx + Math.sin(time + f.phase) * 0.15;
+        f.y += f.vy + Math.cos(time * 0.8 + f.phase) * 0.12;
+        f.phase += f.speed;
+
+        if (f.x < 0) f.x = width;
+        if (f.x > width) f.x = 0;
+        if (f.y < 0) f.y = height * 0.85;
+        if (f.y > height * 0.85) f.y = 0;
+
+        const glowAlpha = 0.25 + (Math.sin(f.phase) + 1) * 0.35;
+        const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 4);
+        grad.addColorStop(0, `rgba(217, 249, 157, ${glowAlpha})`);
+        grad.addColorStop(1, 'rgba(217, 249, 157, 0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r * 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. 缓缓飘落的绿叶
+      for (const lf of leaves) {
+        lf.x += lf.vx + Math.sin(time + lf.angle) * 0.3;
+        lf.y += lf.vy;
+        lf.angle += lf.spin;
+
+        if (lf.y > height) {
+          lf.y = -10;
+          lf.x = Math.random() * width;
+        }
+        if (lf.x > width) lf.x = 0;
+
+        ctx.save();
+        ctx.translate(lf.x, lf.y);
+        ctx.rotate(lf.angle);
+        ctx.fillStyle = 'rgba(134, 239, 172, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, lf.size, lf.size * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 4. 音乐播放时从钢琴上方袅袅升起的音符
+      if (isPlaying && Math.random() < 0.055) {
+        spawnMusicNote();
+      }
+
+      for (let i = notes.length - 1; i >= 0; i--) {
+        const n = notes[i];
+        n.wobble += 0.04;
+        n.x += n.vx + Math.sin(n.wobble) * 0.45;
+        n.y += n.vy;
+        n.alpha -= 0.0065;
+
+        if (n.alpha <= 0) {
+          notes.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.font = `${n.size}px serif`;
+        ctx.fillStyle = `rgba(236, 253, 245, ${n.alpha})`;
+        ctx.shadowColor = 'rgba(110, 231, 183, 0.85)';
+        ctx.shadowBlur = 8;
+        ctx.fillText(n.symbol, n.x, n.y);
+        ctx.restore();
+      }
+    }
+
+    /**
+     * 主动画循环
+     */
+    function animate() {
+      time += 0.016;
+      ctx.clearRect(0, 0, width, height);
+
+      drawBackground();
+      drawPianoAndBoy();
+      drawForegroundAndParticles();
+
+      requestAnimationFrame(animate);
+    }
+
+    // 窗口初始化与自动播放启动
+    window.addEventListener('resize', resizeCanvas);
+    window.onload = function () {
+      resizeCanvas();
+      initParticles();
+      animate();
+      tryAutoPlay();
+    };
+  </script>
+</body>
+</html>
