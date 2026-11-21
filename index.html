@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ETHaN TONY 工作室 — 创意技术与数字体验实验室</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            obsidian: '#07090F',
+            surface: '#0D111A',
+            accentCyan: '#38BDF8',
+            accentViolet: '#A855F7',
+            accentRose: '#F472B6',
+          },
+          animation: {
+            'pulse-slow': 'pulseSlow 7s ease-in-out infinite',
+            'float': 'floatSlow 6s ease-in-out infinite',
+          },
+          keyframes: {
+            pulseSlow: {
+              '0%, 100%': { opacity: '0.35', transform: 'scale(1)' },
+              '50%': { opacity: '0.6', transform: 'scale(1.06)' },
+            },
+            floatSlow: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-8px)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Custom base styling and subtle glassmorphism / grid utilities */
+    body {
+      background-color: #07090f;
+      color: #f8fafc;
+      font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .bg-grid-pattern {
+      background-size: 56px 56px;
+      background-image:
+        linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 25%, #000 35%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 25%, #000 35%, transparent 100%);
+    }
+
+    .glass-panel {
+      background: rgba(15, 20, 32, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .glass-card {
+      background: linear-gradient(160deg, rgba(20, 27, 43, 0.78) 0%, rgba(10, 14, 24, 0.88) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  border-color 0.35s ease,
+                  box-shadow 0.35s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(125, 211, 252, 0.38);
+      box-shadow: 0 24px 50px -18px rgba(0, 0, 0, 0.85), 0 0 28px -8px rgba(56, 189, 248, 0.25);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07090f;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.35);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.55);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-400/30 selection:text-sky-200">
+
+  <!-- Ambient Background Layers -->
+  <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div class="bg-grid-pattern absolute inset-0"></div>
+    <div
+      class="animate-pulse-slow absolute -top-32 left-1/2 h-[440px] w-[440px] -translate-x-1/2 rounded-full bg-sky-500/20 blur-[120px] sm:h-[540px] sm:w-[760px]"
+    ></div>
+    <div
+      class="animate-pulse-slow absolute top-1/3 -left-24 h-[340px] w-[340px] rounded-full bg-purple-600/15 blur-[120px]"
+      style="animation-delay: 2s;"
+    ></div>
+    <div
+      class="animate-pulse-slow absolute bottom-10 -right-24 h-[320px] w-[320px] rounded-full bg-pink-500/10 blur-[120px]"
+      style="animation-delay: 4s;"
+    ></div>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 w-full border-b border-slate-800/70 bg-slate-950/75 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+      <!-- Studio Brand -->
+      <a href="#top" class="group flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-400/60">
+        <div class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-sky-400/30 bg-gradient-to-br from-sky-500/20 via-purple-500/15 to-slate-900 shadow-lg shadow-sky-500/10 transition duration-300 group-hover:scale-105 group-hover:border-sky-300/60">
+          <svg class="h-5 w-5 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2L20 7V17L12 22L4 17V7L12 2Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8L16 10.5V15.5L12 18L8 15.5V10.5L12 8Z" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold tracking-wider text-white sm:text-base">
+            ETHAN TONY <span class="font-medium text-sky-300">工作室</span>
+          </span>
+          <span class="font-mono text-[10px] tracking-widest text-slate-400 uppercase">
+            Creative Tech &amp; Digital Lab
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden items-center gap-1 md:flex" aria-label="主导航">
+        <a
+          href="#about"
+          class="rounded-xl px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          工作室简介 · About
+        </a>
+        <a
+          href="#works"
+          class="rounded-xl px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          作品矩阵 · Works
+        </a>
+        <a
+          href="#contact"
+          class="rounded-xl px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          联系合作 · Contact
+        </a>
+      </nav>
+
+      <!-- Quick Action + Mobile Hamburger -->
+      <div class="flex items-center gap-2">
+        <a
+          href="https://tech.ethantony.abrdns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hidden items-center gap-1.5 rounded-xl border border-sky-400/30 bg-sky-400/10 px-3.5 py-2 text-xs font-semibold text-sky-200 transition hover:border-sky-300/60 hover:bg-sky-400/20 sm:inline-flex"
+        >
+          <span>进入 TONY 主站</span>
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+          </svg>
+        </a>
+
+        <button
+          id="mobileMenuBtn"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobileMenu"
+          aria-label="切换导航菜单"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/80 p-2.5 text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 md:hidden"
+        >
+          <svg id="menuIconOpen" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="menuIconClose" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobileMenu" class="hidden border-t border-slate-800/80 bg-slate-950/95 px-4 py-4 backdrop-blur-xl md:hidden">
+      <div class="flex flex-col space-y-2">
+        <a
+          href="#about"
+          class="mobile-nav-link rounded-xl px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+        >
+          工作室简介 · About
+        </a>
+        <a
+          href="#works"
+          class="mobile-nav-link rounded-xl px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+        >
+          作品矩阵 · Works
+        </a>
+        <a
+          href="#contact"
+          class="mobile-nav-link rounded-xl px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+        >
+          联系合作 · Contact
+        </a>
+        <a
+          href="https://tech.ethantony.abrdns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
+        >
+          <span>访问 TONY 核心枢纽</span>
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="relative z-10">
+    <!-- Hero Section -->
+    <section class="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:px-6 sm:pt-24 sm:pb-28 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <!-- Studio Status Pill -->
+        <div class="mb-6 inline-flex items-center gap-2.5 rounded-full border border-sky-400/25 bg-slate-900/75 px-4 py-1.5 text-xs font-medium text-sky-200 shadow-inner backdrop-blur-md sm:text-sm">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-sky-400"></span>
+          </span>
+          <span>ETHAN TONY 工作室 · Creative Tech &amp; Digital Studio</span>
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-[4.25rem] lg:leading-[1.1]">
+          以创意代码与视觉美学
+          <span class="mt-2 block bg-gradient-to-r from-sky-300 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+            构建数字体验与灵感宇宙
+          </span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+          <strong>ETHAN TONY 工作室</strong>专注于前沿 Web 技术实验、云端音乐听觉空间与动态视觉叙事。我们把代码当作画布，将技术探索、声音律动与影像想象凝练为可交互的数字作品。
+        </p>
+
+        <!-- Primary CTAs -->
+        <div class="mt-9 flex flex-col items-center justify-center gap-3.5 sm:flex-row sm:gap-4">
+          <a
+            href="#works"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 via-cyan-400 to-indigo-400 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-xl shadow-sky-500/25 transition duration-300 hover:scale-[1.02] hover:brightness-110 sm:w-auto"
+          >
+            <span>探索核心作品 · Works</span>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </a>
+          <a
+            href="#about"
+            class="glass-panel inline-flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-slate-100 transition duration-300 hover:border-sky-300/40 hover:bg-white/10 sm:w-auto"
+          >
+            <span>了解工作室理念</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Studio Highlights Strip -->
+      <div class="reveal mt-16 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+        <div class="glass-panel rounded-2xl p-5 sm:p-6">
+          <div class="font-mono text-xs uppercase tracking-wider text-sky-300">01 / Tech Hub</div>
+          <div class="mt-1.5 text-lg font-bold text-white">前沿技术与交互实验</div>
+          <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
+            以 TONY 为核心枢纽，持续沉淀 Web 工程实践、界面动效与数字工具探索。
+          </p>
+        </div>
+        <div class="glass-panel rounded-2xl p-5 sm:p-6">
+          <div class="font-mono text-xs uppercase tracking-wider text-purple-300">02 / Audio Cloud</div>
+          <div class="mt-1.5 text-lg font-bold text-white">沉浸式云端音乐体验</div>
+          <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
+            通过 TONy cloud 连接旋律、氛围与播放交互，打造轻盈纯粹的数字听觉空间。
+          </p>
+        </div>
+        <div class="glass-panel rounded-2xl p-5 sm:p-6">
+          <div class="font-mono text-xs uppercase tracking-wider text-pink-300">03 / Visual &amp; Dream</div>
+          <div class="mt-1.5 text-lg font-bold text-white">影像技巧与梦境叙事</div>
+          <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
+            借助 TONY DREAM 呈现视觉构图、剪辑技巧与充满想象力的光影表达。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About / Studio Philosophy Section -->
+    <section id="about" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <div class="reveal glass-panel relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:p-12">
+        <div class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl"></div>
+        <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
+          <div class="lg:col-span-7">
+            <span class="font-mono text-xs font-medium tracking-widest text-sky-300 uppercase">
+              About ETHAN TONY Studio
+            </span>
+            <h2 class="mt-2 text-2xl font-bold tracking-tight text-white sm:text-4xl">
+              独立数字工作室，连接理性工程与感性表达
+            </h2>
+            <p class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
+              在 <strong>ETHAN TONY 工作室</strong>，每一个项目都是一次独立的创作切片：有的聚焦于技术底座与交互效率，有的围绕声音与情绪展开，有的则致力于视觉节奏与影像语言。
+            </p>
+            <p class="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
+              我们坚持清晰的界面层级、克制而有温度的光影细节，以及跨设备的流畅体验，让访问者无需繁琐步骤即可直达核心内容。
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 lg:col-span-5">
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
+              <div class="text-2xl font-extrabold text-sky-300 sm:text-3xl">03</div>
+              <div class="mt-1 text-xs font-medium text-slate-300 sm:text-sm">核心在线作品站点</div>
+              <div class="mt-1 font-mono text-[11px] text-slate-500">TONY · CLOUD · DREAM</div>
+            </div>
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
+              <div class="text-2xl font-extrabold text-purple-300 sm:text-3xl">100%</div>
+              <div class="mt-1 text-xs font-medium text-slate-300 sm:text-sm">响应式多端适配</div>
+              <div class="mt-1 font-mono text-[11px] text-slate-500">DESKTOP · TABLET · MOBILE</div>
+            </div>
+            <div class="col-span-2 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-sky-950/40 p-4 sm:p-5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold tracking-wide text-slate-200 uppercase">创作维度</span>
+                <span class="rounded-full bg-emerald-400/15 px-2.5 py-0.5 font-mono text-[11px] text-emerald-300">
+                  ACTIVE LAB
+                </span>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="rounded-lg border border-slate-700/80 bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">Web 技术实验</span>
+                <span class="rounded-lg border border-slate-700/80 bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">云端音乐交互</span>
+                <span class="rounded-lg border border-slate-700/80 bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">视频与视觉技巧</span>
+                <span class="rounded-lg border border-slate-700/80 bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">创意前端设计</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Works / Projects Showcase Section -->
+    <section id="works" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <div class="reveal flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <span class="font-mono text-xs font-medium tracking-widest text-sky-300 uppercase">
+            Selected Works · 作品介绍
+          </span>
+          <h2 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            工作室三大核心作品
+          </h2>
+          <p class="mt-2 max-w-2xl text-sm text-slate-400 sm:text-base">
+            点击卡片查看作品详情预览，或直接前往对应站点体验完整内容。
+          </p>
+        </div>
+        <div class="font-mono text-xs text-slate-400">
+          SHOWING <span class="text-sky-300">03</span> PROJECTS
+        </div>
+      </div>
+
+      <!-- Three Interactive Project Cards -->
+      <div id="projectsGrid" class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+        <!-- Card 1: TONY -->
+        <article
+          data-project-id="tony"
+          class="reveal glass-card group relative flex cursor-pointer flex-col justify-between rounded-3xl p-6 sm:p-7"
+        >
+          <div>
+            <!-- Top Row: Badge & Index -->
+            <div class="flex items-center justify-between gap-3">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 font-mono text-xs font-medium text-sky-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                Core Tech Hub
+              </span>
+              <span class="font-mono text-xs text-slate-500 transition group-hover:text-sky-300">01</span>
+            </div>
+
+            <!-- Visual Banner Graphic -->
+            <div class="mt-5 flex h-32 items-center justify-center overflow-hidden rounded-2xl border border-slate-800/90 bg-gradient-to-br from-sky-500/15 via-slate-900 to-indigo-950/60 p-4">
+              <div class="animate-float flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-300/30 bg-sky-400/15 text-sky-300 shadow-lg shadow-sky-500/20">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-mono text-xs text-sky-300">tech.ethantony.abrdns.com</div>
+                  <div class="text-sm font-semibold text-white">主枢纽 &amp; 技术实验场</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title & Description -->
+            <h3 class="mt-6 text-2xl font-bold tracking-tight text-white transition group-hover:text-sky-300">
+              TONY
+            </h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-300">
+              ETHaN TONY 工作室的核心技术枢纽与主门户站点，集中呈现各类 Web 技术实验、工具探索与数字创作入口。
+            </p>
+
+            <!-- Tags -->
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Main Portal</span>
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Tech Experiments</span>
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Web Lab</span>
+            </div>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="mt-7 flex items-center justify-between gap-3 border-t border-slate-800/80 pt-5">
+            <button
+              type="button"
+              data-inspect="tony"
+              class="inspect-btn inline-flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-sky-400/50 hover:text-sky-200"
+            >
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>详情预览</span>
+            </button>
+
+            <a
+              href="https://tech.ethantony.abrdns.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="stop-prop inline-flex items-center gap-1.5 rounded-xl bg-sky-400/15 px-4 py-2 text-xs font-bold text-sky-200 transition hover:bg-sky-400 hover:text-slate-950"
+            >
+              <span>访问站点</span>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+              </svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 2: TONy cloud -->
+        <article
+          data-project-id="tony-cloud"
+          class="reveal glass-card group relative flex cursor-pointer flex-col justify-between rounded-3xl p-6 sm:p-7"
+          style="transition-delay: 90ms;"
+        >
+          <div>
+            <!-- Top Row: Badge & Index -->
+            <div class="flex items-center justify-between gap-3">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 font-mono text-xs font-medium text-purple-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-purple-400"></span>
+                Music &amp; Audio Cloud
+              </span>
+              <span class="font-mono text-xs text-slate-500 transition group-hover:text-purple-300">02</span>
+            </div>
+
+            <!-- Visual Banner Graphic -->
+            <div class="mt-5 flex h-32 items-center justify-center overflow-hidden rounded-2xl border border-slate-800/90 bg-gradient-to-br from-purple-500/15 via-slate-900 to-fuchsia-950/60 p-4">
+              <div class="animate-float flex items-center gap-3" style="animation-delay: 1.2s;">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-purple-300/30 bg-purple-400/15 text-purple-300 shadow-lg shadow-purple-500/20">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-mono text-xs text-purple-300">/music/SONG.html</div>
+                  <div class="text-sm font-semibold text-white">云端音乐与听觉空间</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title & Description -->
+            <h3 class="mt-6 text-2xl font-bold tracking-tight text-white transition group-hover:text-purple-300">
+              TONy cloud
+            </h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-300">
+              围绕音乐与音频体验打造的云端曲库与听觉空间，将曲目浏览、氛围沉浸与轻量播放交互融为一体。
+            </p>
+
+            <!-- Tags -->
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Music Cloud</span>
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Audio Experience</span>
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">SONG.html</span>
+            </div>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="mt-7 flex items-center justify-between gap-3 border-t border-slate-800/80 pt-5">
+            <button
+              type="button"
+              data-inspect="tony-cloud"
+              class="inspect-btn inline-flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-purple-400/50 hover:text-purple-200"
+            >
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>详情预览</span>
+            </button>
+
+            <a
+              href="https://tech.ethantony.abrdns.com/music/SONG.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="stop-prop inline-flex items-center gap-1.5 rounded-xl bg-purple-400/15 px-4 py-2 text-xs font-bold text-purple-200 transition hover:bg-purple-400 hover:text-slate-950"
+            >
+              <span>打开音乐云</span>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+              </svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 3: TONY DREAM -->
+        <article
+          data-project-id="tony-dream"
+          class="reveal glass-card group relative flex cursor-pointer flex-col justify-between rounded-3xl p-6 sm:p-7 md:col-span-2 lg:col-span-1"
+          style="transition-delay: 180ms;"
+        >
+          <div>
+            <!-- Top Row: Badge & Index -->
+            <div class="flex items-center justify-between gap-3">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-pink-400/30 bg-pink-400/10 px-3 py-1 font-mono text-xs font-medium text-pink-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-pink-400"></span>
+                Video &amp; Visual Skill
+              </span>
+              <span class="font-mono text-xs text-slate-500 transition group-hover:text-pink-300">03</span>
+            </div>
+
+            <!-- Visual Banner Graphic -->
+            <div class="mt-5 flex h-32 items-center justify-center overflow-hidden rounded-2xl border border-slate-800/90 bg-gradient-to-br from-pink-500/15 via-slate-900 to-rose-950/60 p-4">
+              <div class="animate-float flex items-center gap-3" style="animation-delay: 2.4s;">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-pink-300/30 bg-pink-400/15 text-pink-300 shadow-lg shadow-pink-500/20">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-mono text-xs text-pink-300">/dream/VIDEOSKILL.html</div>
+                  <div class="text-sm font-semibold text-white">视觉技巧与梦境影像</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title & Description -->
+            <h3 class="mt-6 text-2xl font-bold tracking-tight text-white transition group-hover:text-pink-300">
+              TONY DREAM
+            </h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-300">
+              聚焦视频创作、视觉技巧与梦境感影像表达的专题作品，展现镜头语言、动态效果与创意视觉方法论。
+            </p>
+
+            <!-- Tags -->
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Video Skill</span>
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">Visual Craft</span>
+              <span class="rounded-lg bg-slate-800/80 px-2.5 py-1 font-mono text-[11px] text-slate-300">VIDEOSKILL.html</span>
+            </div>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="mt-7 flex items-center justify-between gap-3 border-t border-slate-800/80 pt-5">
+            <button
+              type="button"
+              data-inspect="tony-dream"
+              class="inspect-btn inline-flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-pink-400/50 hover:text-pink-200"
+            >
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>详情预览</span>
+            </button>
+
+            <a
+              href="https://tech.ethantony.abrdns.com/dream/VIDEOSKILL.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="stop-prop inline-flex items-center gap-1.5 rounded-xl bg-pink-400/15 px-4 py-2 text-xs font-bold text-pink-200 transition hover:bg-pink-400 hover:text-slate-950"
+            >
+              <span>进入 DREAM</span>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+              </svg>
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Contact & Collaboration Section -->
+    <section id="contact" class="mx-auto max-w-6xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16 sm:pb-28 lg:px-8">
+      <div class="reveal glass-panel rounded-3xl p-6 sm:p-10 lg:p-12">
+        <div class="flex flex-col justify-between gap-8 lg:flex-row lg:items-center">
+          <div class="max-w-xl">
+            <span class="font-mono text-xs font-medium tracking-widest text-sky-300 uppercase">
+              Contact &amp; Connect
+            </span>
+            <h2 class="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              与 ETHAN TONY 工作室交流或发起合作
+            </h2>
+            <p class="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
+              无论是创意交互原型、数字内容策划、音乐与视觉跨界表达，还是站点访问反馈，欢迎通过以下官方链接或工作室域名与我们联系。
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end">
+            <button
+              id="copyDomainBtn"
+              type="button"
+              class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/90 px-5 py-3.5 text-sm font-semibold text-slate-100 transition hover:border-sky-400/50 hover:bg-slate-800"
+            >
+              <svg class="h-4 w-4 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>复制工作室主域</span>
+            </button>
+
+            <a
+              href="https://tech.ethantony.abrdns.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-indigo-400 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+            >
+              <span>前往 TONY 空间</span>
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Studio Footer -->
+  <footer class="relative z-10 border-t border-slate-800/80 bg-slate-950/85 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
+      <div class="text-center sm:text-left">
+        <div class="text-sm font-bold tracking-wide text-white">
+          ETHAN TONY 工作室 <span class="font-mono text-xs font-normal text-slate-400">· Creative Tech &amp; Digital Studio</span>
+        </div>
+        <p class="mt-1 text-xs text-slate-500">
+          © <span id="copyrightYear">2026</span> ETHAN TONY 工作室. All rights reserved.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400 sm:gap-6">
+        <a
+          href="https://tech.ethantony.abrdns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="transition hover:text-sky-300"
+        >
+          TONY
+        </a>
+        <a
+          href="https://tech.ethantony.abrdns.com/music/SONG.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="transition hover:text-purple-300"
+        >
+          TONy cloud
+        </a>
+        <a
+          href="https://tech.ethantony.abrdns.com/dream/VIDEOSKILL.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="transition hover:text-pink-300"
+        >
+          TONY DREAM
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Project Detail Modal -->
+  <div
+    id="projectModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div
+      id="projectModalCard"
+      class="glass-panel relative w-full max-w-xl scale-95 rounded-3xl p-6 opacity-0 shadow-2xl transition duration-200 sm:p-8"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <span
+            id="modalBadge"
+            class="inline-flex items-center rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 font-mono text-xs font-medium text-sky-200"
+          >
+            PROJECT
+          </span>
+          <h3 id="modalTitle" class="mt-3 text-2xl font-bold text-white sm:text-3xl"></h3>
+        </div>
+        <button
+          id="closeModalBtn"
+          type="button"
+          aria-label="关闭详情窗口"
+          class="rounded-xl border border-slate-700/80 bg-slate-900/80 p-2 text-slate-300 transition hover:border-slate-500 hover:text-white"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <p id="modalSummary" class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base"></p>
+
+      <!-- Focus Highlights -->
+      <div class="mt-5 rounded-2xl border border-slate-800/90 bg-slate-900/70 p-4">
+        <div class="font-mono text-xs uppercase tracking-wider text-slate-400">核心聚焦 · Key Highlights</div>
+        <ul id="modalHighlights" class="mt-2.5 space-y-2 text-sm text-slate-200"></ul>
+      </div>
+
+      <!-- Tags -->
+      <div id="modalTags" class="mt-5 flex flex-wrap gap-2"></div>
+
+      <!-- Endpoint URL Box -->
+      <div class="mt-5 flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+          <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Target URL</div>
+          <div id="modalUrlText" class="truncate font-mono text-xs text-sky-300"></div>
+        </div>
+        <button
+          id="copyModalUrlBtn"
+          type="button"
+          class="self-start rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 font-mono text-xs text-slate-200 transition hover:border-sky-400/50 hover:text-sky-200 sm:self-center"
+        >
+          复制链接
+        </button>
+      </div>
+
+      <!-- Modal Footer CTA -->
+      <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          id="modalSecondaryClose"
+          type="button"
+          class="rounded-xl border border-slate-700/80 bg-slate-900/70 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        >
+          返回工作室
+        </button>
+        <a
+          id="modalVisitLink"
+          href="https://tech.ethantony.abrdns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-400 to-indigo-400 px-5 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+        >
+          <span>立即前往作品页</span>
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7V16" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Message Box (replaces alert) -->
+  <div
+    id="toastMessage"
+    role="status"
+    aria-live="polite"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 translate-y-4 items-center gap-2 rounded-2xl border border-sky-400/35 bg-slate-900/95 px-4 py-3 text-xs font-medium text-sky-100 opacity-0 shadow-2xl backdrop-blur-xl transition duration-300 sm:text-sm"
+  >
+    <svg class="h-4 w-4 shrink-0 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+    <span id="toastText">已复制到剪贴板</span>
+  </div>
+
+  <script>
+    /**
+     * ETHAN TONY 工作室 interactive controller
+     * Handles mobile navigation, smooth reveal animations, project modal inspection,
+     * and safe clipboard copying with non-blocking toast notifications.
+     */
+    (function () {
+      'use strict';
+
+      const PROJECTS = {
+        tony: {
+          title: 'TONY',
+          badge: 'Core Tech Hub · 主枢纽与实验场',
+          summary:
+            'TONY 是 ETHAN TONY 工作室的核心技术枢纽与主站点入口，汇集工作室的技术探索、前端交互实践与数字工具实验，为各项子作品提供统一连接。',
+          url: 'https://tech.ethantony.abrdns.com/',
+          tags: ['Main Portal', 'Core Tech Hub', 'Web Experiments', 'Digital Studio'],
+          highlights: [
+            '作为工作室核心入口，串联技术实践与多维创作模块',
+            '聚焦现代 Web 交互体验、界面细节与实验性功能探索',
+            '直达工作室主空间，快速浏览最新技术与作品动态',
+          ],
+          badgeClass: 'border-sky-400/35 bg-sky-400/15 text-sky-200',
+        },
+        'tony-cloud': {
+          title: 'TONy cloud',
+          badge: 'Music & Audio Cloud · 云端音乐空间',
+          summary:
+            'TONy cloud 专注于云端音乐与音频体验，打造轻盈流畅的数字曲库与听觉氛围空间，让旋律与视觉界面在浏览器中自然共鸣。',
+          url: 'https://tech.ethantony.abrdns.com/music/SONG.html',
+          tags: ['TONy cloud', 'Music', 'Audio Cloud', 'SONG.html'],
+          highlights: [
+            '专注音乐曲目与听觉体验的云端浏览与播放场景',
+            '兼顾沉浸感与简洁操作，适合日常聆听与灵感陪伴',
+            '隶属于 ETHaN TONY 工作室数字体验矩阵',
+          ],
+          badgeClass: 'border-purple-400/35 bg-purple-400/15 text-purple-200',
+        },
+        'tony-dream': {
+          title: 'TONY DREAM',
+          badge: 'Video & Visual Skill · 视觉技巧与梦境影像',
+          summary:
+            'TONY DREAM 聚焦视频创作、视觉技巧与充满想象力的梦境感表达，呈现镜头构图、画面节奏与创意视觉方法论的探索成果。',
+          url: 'https://tech.ethantony.abrdns.com/dream/VIDEOSKILL.html',
+          tags: ['TONY DREAM', 'Video Skill', 'Visual Craft', 'VIDEOSKILL.html'],
+          highlights: [
+            '围绕视频制作技巧、动态视觉与创意表达展开',
+            '融合梦境氛围与实用视觉思路，激发影像创作灵感',
+            '支持直接打开专题页面查看完整内容',
+          ],
+          badgeClass: 'border-pink-400/35 bg-pink-400/15 text-pink-200',
+        },
+      };
+
+      // Dynamic copyright year
+      const yearEl = document.getElementById('copyrightYear');
+      if (yearEl) {
+        const currentYear = new Date().getFullYear();
+        yearEl.textContent = currentYear > 2026 ? `2026–${currentYear}` : '2026';
+      }
+
+      // Toast helper (avoids native alert/confirm)
+      let toastTimeout = null;
+      function showToast(message) {
+        const toastEl = document.getElementById('toastMessage');
+        const toastTextEl = document.getElementById('toastText');
+        if (!toastEl || !toastTextEl) return;
+
+        toastTextEl.textContent = message;
+        toastEl.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+        toastEl.classList.add('opacity-100', 'translate-y-0');
+
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toastEl.classList.remove('opacity-100', 'translate-y-0');
+          toastEl.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+        }, 2600);
+      }
+
+      // Clipboard helper with execCommand fallback for iframe environments
+      function copyToClipboard(text, successMsg) {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard
+              .writeText(text)
+              .then(() => showToast(successMsg))
+              .catch(() => fallbackCopy(text, successMsg));
+          } else {
+            fallbackCopy(text, successMsg);
+          }
+        } catch (err) {
+          fallbackCopy(text, successMsg);
+        }
+      }
+
+      function fallbackCopy(text, successMsg) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.left = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          showToast(successMsg);
+        } catch (err) {
+          showToast('复制失败，请手动复制链接');
+        }
+      }
+
+      // Mobile menu toggle
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const menuIconOpen = document.getElementById('menuIconOpen');
+      const menuIconClose = document.getElementById('menuIconClose');
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          const isExpanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
+          mobileMenuBtn.setAttribute('aria-expanded', String(!isExpanded));
+          mobileMenu.classList.toggle('hidden');
+          menuIconOpen.classList.toggle('hidden');
+          menuIconClose.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+          link.addEventListener('click', () => {
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            mobileMenu.classList.add('hidden');
+            menuIconOpen.classList.remove('hidden');
+            menuIconClose.classList.add('hidden');
+          });
+        });
+      }
+
+      // Scroll reveal animation via IntersectionObserver
+      const revealElements = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -30px 0px' }
+        );
+        revealElements.forEach((el) => observer.observe(el));
+      } else {
+        revealElements.forEach((el) => el.classList.add('is-visible'));
+      }
+
+      // Project detail modal logic
+      const modal = document.getElementById('projectModal');
+      const modalCard = document.getElementById('projectModalCard');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBadge = document.getElementById('modalBadge');
+      const modalSummary = document.getElementById('modalSummary');
+      const modalHighlights = document.getElementById('modalHighlights');
+      const modalTags = document.getElementById('modalTags');
+      const modalUrlText = document.getElementById('modalUrlText');
+      const modalVisitLink = document.getElementById('modalVisitLink');
+      const copyModalUrlBtn = document.getElementById('copyModalUrlBtn');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const modalSecondaryClose = document.getElementById('modalSecondaryClose');
+
+      let activeProjectUrl = 'https://tech.ethantony.abrdns.com/';
+
+      function openProjectModal(projectId) {
+        const project = PROJECTS[projectId];
+        if (!project || !modal || !modalCard) return;
+
+        activeProjectUrl = project.url;
+        modalTitle.textContent = project.title;
+        modalBadge.textContent = project.badge;
+        modalBadge.className = `inline-flex items-center rounded-full border px-3 py-1 font-mono text-xs font-medium ${project.badgeClass}`;
+        modalSummary.textContent = project.summary;
+        modalUrlText.textContent = project.url;
+        modalVisitLink.href = project.url;
+
+        modalHighlights.innerHTML = '';
+        project.highlights.forEach((item) => {
+          const li = document.createElement('li');
+          li.className = 'flex items-start gap-2.5';
+          li.innerHTML = `
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400"></span>
+            <span>${item}</span>
+          `;
+          modalHighlights.appendChild(li);
+        });
+
+        modalTags.innerHTML = '';
+        project.tags.forEach((tag) => {
+          const span = document.createElement('span');
+          span.className = 'rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1 font-mono text-xs text-slate-300';
+          span.textContent = tag;
+          modalTags.appendChild(span);
+        });
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        requestAnimationFrame(() => {
+          modalCard.classList.remove('scale-95', 'opacity-0');
+          modalCard.classList.add('scale-100', 'opacity-100');
+        });
+      }
+
+      function closeProjectModal() {
+        if (!modal || !modalCard) return;
+        modalCard.classList.remove('scale-100', 'opacity-100');
+        modalCard.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }, 180);
+      }
+
+      // Attach card & inspect button listeners
+      document.querySelectorAll('article[data-project-id]').forEach((card) => {
+        const projectId = card.getAttribute('data-project-id');
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('a.stop-prop')) return;
+          openProjectModal(projectId);
+        });
+      });
+
+      document.querySelectorAll('.inspect-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-inspect');
+          openProjectModal(id);
+        });
+      });
+
+      if (closeModalBtn) closeModalBtn.addEventListener('click', closeProjectModal);
+      if (modalSecondaryClose) modalSecondaryClose.addEventListener('click', closeProjectModal);
+
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeProjectModal();
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+          closeProjectModal();
+        }
+      });
+
+      if (copyModalUrlBtn) {
+        copyModalUrlBtn.addEventListener('click', () => {
+          copyToClipboard(activeProjectUrl, `已复制链接：${activeProjectUrl}`);
+        });
+      }
+
+      const copyDomainBtn = document.getElementById('copyDomainBtn');
+      if (copyDomainBtn) {
+        copyDomainBtn.addEventListener('click', () => {
+          copyToClipboard('https://tech.ethantony.abrdns.com/', '已复制 ETHaN TONY 工作室主域链接');
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
