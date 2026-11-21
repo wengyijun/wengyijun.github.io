@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雨之眼 · 在线风水聚气矩阵 | ETHaN TONY 工作室</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            display: ['Cinzel', 'Noto Sans SC', 'serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --bg-obsidian: #060911;
+      --accent-cyan: #38bdf8;
+      --accent-aqua: #2dd4bf;
+      --accent-gold: #fbbf24;
+      --accent-amber: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #060911;
+      color: #f8fafc;
+      font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .glass-hud {
+      background: rgba(9, 14, 26, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .glass-sub {
+      background: rgba(13, 20, 36, 0.62);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    /* Custom range sliders */
+    input[type="range"].studio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(51, 65, 85, 0.75);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].studio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #38bdf8, #fbbf24);
+      border: 2px solid #060911;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"].studio-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    input[type="range"].studio-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #38bdf8, #fbbf24);
+      border: 2px solid #060911;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+      cursor: pointer;
+    }
+
+    #oculusCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-sky-400/25 selection:text-sky-200">
+
+  <!-- Top Header Bar -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-[#060911]/80 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-400/35 bg-gradient-to-br from-sky-500/20 via-teal-400/10 to-amber-400/15 shadow-lg shadow-sky-500/10">
+          <svg class="h-5 w-5 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="9" stroke-dasharray="3 2" />
+            <circle cx="12" cy="12" r="4.5" class="text-amber-300" />
+            <path stroke-linecap="round" d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold tracking-wide text-white sm:text-base">
+              雨之眼 · 在线风水聚气矩阵
+            </h1>
+            <span class="hidden rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 font-mono text-[10px] text-amber-300 sm:inline-block">
+              RAIN OCULUS · 风生水起
+            </span>
+          </div>
+          <p class="font-mono text-[11px] text-slate-400">
+            ETHaN TONY 工作室 · 为 <span class="text-sky-300">翁怡骏 (Ethan / Tony)</span> 定制的数字聚气场
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Audio Ambience & Trigger Pulse -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button
+          id="pulseWaveBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/35 bg-amber-400/10 px-3 py-2 text-xs font-semibold text-amber-200 transition hover:border-amber-300/70 hover:bg-amber-400/20"
+        >
+          <svg class="h-4 w-4 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>激发聚气波</span>
+        </button>
+
+        <button
+          id="audioToggleBtn"
+          type="button"
+          aria-pressed="false"
+          class="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/85 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-sky-400/50 hover:text-sky-200"
+        >
+          <svg id="audioOffIcon" class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+          <svg id="audioOnIcon" class="hidden h-4 w-4 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <span id="audioLabel">水声静音</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+
+      <!-- Left / Center: Interactive Rain Oculus & Feng Shui Matrix Stage -->
+      <section class="lg:col-span-8">
+        <div class="glass-hud relative overflow-hidden rounded-3xl shadow-2xl shadow-black/60">
+          <!-- Stage Top Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/75 px-4 py-3 sm:px-6">
+            <div class="flex items-center gap-2.5">
+              <span class="h-2.5 w-2.5 rounded-full bg-teal-400 shadow-[0_0_10px_#2dd4bf]"></span>
+              <span class="text-xs font-semibold tracking-wide text-slate-200 sm:text-sm">
+                中庭天幕聚水池 · 交互式点击/触碰水面投落水滴
+              </span>
+            </div>
+            <div id="activeModeBadge" class="rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 font-mono text-xs text-sky-200">
+              意念模式：事业腾飞
+            </div>
+          </div>
+
+          <!-- Canvas Wrapper (Responsive Height) -->
+          <div class="relative h-[440px] w-full sm:h-[540px] lg:h-[600px]">
+            <canvas id="oculusCanvas" aria-label="雨之眼与风水聚气矩阵交互画布"></canvas>
+
+            <!-- Floating Corner Caption -->
+            <div class="pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 sm:bottom-4 sm:left-5 sm:right-5">
+              <span class="rounded-lg bg-slate-950/70 px-2.5 py-1 font-mono backdrop-blur-md">
+                外圈：九宫八卦 · 方位聚气
+              </span>
+              <span class="rounded-lg bg-slate-950/70 px-2.5 py-1 font-mono text-amber-300/90 backdrop-blur-md">
+                中宫：雨之眼天幕瀑布 · 纳财生水
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Node Selector Strip Below Canvas -->
+          <div class="border-t border-slate-800/75 bg-slate-950/50 px-4 py-3.5 sm:px-6">
+            <div class="mb-2 flex items-center justify-between">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-slate-400">
+                方位与财运节点快捷检视（点击下方节点或直接点选画布节点）
+              </span>
+              <span id="resonanceReadout" class="font-mono text-xs text-teal-300">共振度 84%</span>
+            </div>
+            <div id="quickNodeBar" class="flex gap-2 overflow-x-auto pb-1">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Sidebar: Focus Modes, Flow Sliders & Selected Node Inspector -->
+      <aside class="flex flex-col gap-5 lg:col-span-4">
+
+        <!-- 1. Intention Focus Modes -->
+        <div class="glass-hud rounded-3xl p-5 sm:p-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold tracking-wide text-white sm:text-base">
+              意念聚焦模式 · Focus Mode
+            </h2>
+            <span class="font-mono text-[11px] text-amber-300">04 MODES</span>
+          </div>
+          <p class="mt-1 text-xs text-slate-400">
+            切换不同侧重方向，矩阵光晕与水流韵律将随之调谐。
+          </p>
+
+          <div id="modeButtons" class="mt-4 grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              data-mode="career"
+              class="mode-btn rounded-2xl border border-sky-400/50 bg-sky-400/15 px-3.5 py-3 text-left transition"
+            >
+              <div class="text-xs font-bold text-white sm:text-sm">事业腾飞</div>
+              <div class="mt-0.5 font-mono text-[10px] text-sky-300">东南巽位 · 顺势跃升</div>
+            </button>
+
+            <button
+              type="button"
+              data-mode="wealth"
+              class="mode-btn rounded-2xl border border-slate-800 bg-slate-900/65 px-3.5 py-3 text-left transition hover:border-amber-400/40"
+            >
+              <div class="text-xs font-bold text-white sm:text-sm">财源滚滚</div>
+              <div class="mt-0.5 font-mono text-[10px] text-amber-300">中宫聚水 · 开源纳财</div>
+            </button>
+
+            <button
+              type="button"
+              data-mode="inspiration"
+              class="mode-btn rounded-2xl border border-slate-800 bg-slate-900/65 px-3.5 py-3 text-left transition hover:border-teal-400/40"
+            >
+              <div class="text-xs font-bold text-white sm:text-sm">灵感破界</div>
+              <div class="mt-0.5 font-mono text-[10px] text-teal-300">南方离火 · 创意迸发</div>
+            </button>
+
+            <button
+              type="button"
+              data-mode="steady"
+              class="mode-btn rounded-2xl border border-slate-800 bg-slate-900/65 px-3.5 py-3 text-left transition hover:border-indigo-400/40"
+            >
+              <div class="text-xs font-bold text-white sm:text-sm">身心稳固</div>
+              <div class="mt-0.5 font-mono text-[10px] text-indigo-300">北方坎水 · 定心致远</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Water Flow, Rain & Matrix Resonance Controls -->
+        <div class="glass-hud rounded-3xl p-5 sm:p-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold tracking-wide text-white sm:text-base">
+              水势与矩阵参数调谐
+            </h2>
+            <button
+              id="resetParamsBtn"
+              type="button"
+              class="rounded-lg border border-slate-700/80 bg-slate-900/80 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition hover:border-sky-400/40 hover:text-sky-200"
+            >
+              重置默认
+            </button>
+          </div>
+
+          <div class="mt-4 space-y-4">
+            <div>
+              <div class="mb-1.5 flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-300">雨之眼瀑布流速</span>
+                <span id="flowVal" class="font-mono text-sky-300">75%</span>
+              </div>
+              <input id="flowSlider" type="range" min="15" max="100" value="75" class="studio-slider" />
+            </div>
+
+            <div>
+              <div class="mb-1.5 flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-300">天幕落雨密度</span>
+                <span id="rainVal" class="font-mono text-teal-300">65%</span>
+              </div>
+              <input id="rainSlider" type="range" min="10" max="100" value="65" class="studio-slider" />
+            </div>
+
+            <div>
+              <div class="mb-1.5 flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-300">八卦矩阵共振度</span>
+                <span id="resonanceSliderVal" class="font-mono text-amber-300">84%</span>
+              </div>
+              <input id="resonanceSlider" type="range" min="20" max="100" value="84" class="studio-slider" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Selected Feng Shui Node Inspector Card -->
+        <div id="inspectorCard" class="glass-hud rounded-3xl p-5 sm:p-6">
+          <div class="flex items-center justify-between gap-2">
+            <span id="inspDirectionBadge" class="rounded-full border border-amber-400/35 bg-amber-400/15 px-3 py-1 font-mono text-xs font-semibold text-amber-200">
+              中宫 · 聚财核心
+            </span>
+            <span id="inspElementTag" class="font-mono text-xs text-slate-400">五行：水木相生</span>
+          </div>
+
+          <h3 id="inspTitle" class="mt-3.5 text-xl font-bold text-white">
+            财源广进 · 汇水成渊
+          </h3>
+          <p id="inspDesc" class="mt-2 text-xs leading-relaxed text-slate-300 sm:text-sm">
+            仿滨海湾金沙“雨之眼”天幕聚水成池之意，四方之气顺势汇入中宫水池，象征资源沉淀、格局展开与风生水起之势。
+          </p>
+
+          <div class="mt-4 rounded-2xl border border-slate-800/90 bg-slate-950/65 p-3.5">
+            <div class="font-mono text-[10px] uppercase tracking-wider text-amber-300/90">
+              今日聚气寄语 · Affirmation for Ethan / Tony
+            </div>
+            <p id="inspAffirmation" class="mt-1.5 text-xs font-medium leading-relaxed text-slate-100 sm:text-sm">
+              “静水流深，顺势而行；水聚天心，万象更新，翁怡骏步步高升、风生水起。”
+            </p>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    /**
+     * 雨之眼 · 在线风水聚气矩阵 (Rain Oculus & Feng Shui Matrix)
+     * Self-contained HTML5 Canvas visual engine + Web Audio API ambient water/chime synthesizer.
+     */
+    (function () {
+      'use strict';
+
+      // Feng Shui Matrix Nodes (Cardinal + Wealth/Momentum Nodes)
+      const MATRIX_NODES = [
+        {
+          id: 'center',
+          shortName: '中宫聚财',
+          direction: '中宫 · 聚财核心',
+          element: '五行：水润万物',
+          title: '财源广进 · 汇水成渊',
+          desc: '仿滨海湾金沙“雨之眼”天幕环流汇入中央水池的建筑意象，四方灵气与水流向心凝聚，寓意聚财纳气、格局稳固。',
+          affirmation: '“水聚中宫，气韵贯通；翁怡骏稳步前行，财源广进、风生水起。”',
+          angleDeg: null, // Center node
+          radiusFactor: 0,
+          accent: '#fbbf24',
+          modes: ['wealth', 'career'],
+        },
+        {
+          id: 'east',
+          shortName: '东/青龙',
+          direction: '东方震卦 · 青龙位',
+          element: '五行：青龙生木',
+          title: '贵人相助 · 青龙抬头',
+          desc: '东方青龙主生发与助力，水流环绕震位生发之力，象征新项目破土、良师益友相伴与主动出击的魄力。',
+          affirmation: '“青龙跃水，生机盎然；得道多助，顺势而起，创意与机遇同步生长。”',
+          angleDeg: 0,
+          radiusFactor: 0.78,
+          accent: '#2dd4bf',
+          modes: ['career', 'inspiration'],
+        },
+        {
+          id: 'southeast',
+          shortName: '东南巽位',
+          direction: '东南巽卦 · 顺风水起',
+          element: '五行：风助水势',
+          title: '事业腾飞 · 乘风破浪',
+          desc: '巽为风，水借风势则波澜壮阔。此节点呼应“风生水起”之意，助力传播声量、拓展版图与关键跃迁。',
+          affirmation: '“风起云涌，水润万物；乘势而上，事业版图持续打开。”',
+          angleDeg: 45,
+          radiusFactor: 0.78,
+          accent: '#38bdf8',
+          modes: ['career', 'wealth'],
+        },
+        {
+          id: 'south',
+          shortName: '南/朱雀',
+          direction: '南方离卦 · 朱雀位',
+          element: '五行：水火既济',
+          title: '灵感涌现 · 光影明朗',
+          desc: '南方离明象征洞察、表达与高光时刻，清澈水波映照天光，寓意水火既济、灵感清晰、作品熠熠生辉。',
+          affirmation: '“水光映照离明，灵感如泉涌；每一次表达都清晰有力、独具锋芒。”',
+          angleDeg: 90,
+          radiusFactor: 0.78,
+          accent: '#f472b6',
+          modes: ['inspiration'],
+        },
+        {
+          id: 'southwest',
+          shortName: '西南坤位',
+          direction: '西南坤卦 · 厚德载物',
+          element: '五行：厚土蓄水',
+          title: '稳步升迁 · 根基深厚',
+          desc: '坤卦厚重包容，如池底承托万千水滴，象征长期主义、扎实积累与关键时刻的稳健承接力。',
+          affirmation: '“厚积薄发，水落石出；根基愈稳，步履愈从容坚定。”',
+          angleDeg: 135,
+          radiusFactor: 0.78,
+          accent: '#f59e0b',
+          modes: ['steady', 'career'],
+        },
+        {
+          id: 'west',
+          shortName: '西/白虎',
+          direction: '西方兑卦 · 白虎位',
+          element: '五行：金生丽水',
+          title: '金水相生 · 精炼锋芒',
+          desc: '西方兑金生水，象征去芜存菁、清晰决断与精致质感，让复杂构想凝练为利落高效的成果。',
+          affirmation: '“金水相涵，去繁就简；以清醒判断与精湛工艺成就非凡。”',
+          angleDeg: 180,
+          radiusFactor: 0.78,
+          accent: '#a5f3fc',
+          modes: ['wealth', 'steady'],
+        },
+        {
+          id: 'northwest',
+          shortName: '西北乾位',
+          direction: '西北乾卦 · 乾元统领',
+          element: '五行：天水同流',
+          title: '格局跃升 · 远见卓识',
+          desc: '乾位主统筹与格局，高处天幕落水如天降甘霖，寓意站在更高维度审视全局、把握长线机遇。',
+          affirmation: '“天水一色，胸怀全局；以长远眼光布局未来，收获丰厚回报。”',
+          angleDeg: 225,
+          radiusFactor: 0.78,
+          accent: '#fde047',
+          modes: ['career', 'wealth'],
+        },
+        {
+          id: 'north',
+          shortName: '北/玄武',
+          direction: '北方坎卦 · 玄武位',
+          element: '五行：坎水归源',
+          title: '身心稳固 · 静水流深',
+          desc: '北方坎为水之本源，玄武主镇守与定力，在喧嚣节奏中守住内心的平静与专注，蓄力待发。',
+          affirmation: '“坎水归源，心静如镜；定力自生，万物皆可从容应对。”',
+          angleDeg: 270,
+          radiusFactor: 0.78,
+          accent: '#818cf8',
+          modes: ['steady', 'inspiration'],
+        },
+        {
+          id: 'northeast',
+          shortName: '东北艮位',
+          direction: '东北艮卦 · 止静蓄势',
+          element: '五行：山环水抱',
+          title: '聚气生财 · 蓄势待发',
+          desc: '艮为山，山环水抱则气聚不散，象征在阶段转折处沉淀能量、打磨作品，迎向下一轮爆发。',
+          affirmation: '“山环水抱，聚气成势；每一次沉淀都在为更高的跃升蓄力。”',
+          angleDeg: 315,
+          radiusFactor: 0.78,
+          accent: '#34d399',
+          modes: ['wealth', 'steady'],
+        },
+      ];
+
+      const MODE_CONFIG = {
+        career: {
+          label: '事业腾飞',
+          primaryColor: '#38bdf8',
+          secondaryColor: '#2dd4bf',
+          focusNodeId: 'southeast',
+          speedMult: 1.15,
+        },
+        wealth: {
+          label: '财源滚滚',
+          primaryColor: '#fbbf24',
+          secondaryColor: '#38bdf8',
+          focusNodeId: 'center',
+          speedMult: 1.05,
+        },
+        inspiration: {
+          label: '灵感破界',
+          primaryColor: '#f472b6',
+          secondaryColor: '#38bdf8',
+          focusNodeId: 'south',
+          speedMult: 1.25,
+        },
+        steady: {
+          label: '身心稳固',
+          primaryColor: '#818cf8',
+          secondaryColor: '#2dd4bf',
+          focusNodeId: 'north',
+          speedMult: 0.85,
+        },
+      };
+
+      // Application State
+      const state = {
+        mode: 'career',
+        flow: 75,         // 15..100
+        rain: 65,         // 10..100
+        resonance: 84,    // 20..100
+        selectedNodeId: 'center',
+        hoveredNodeId: null,
+        audioEnabled: false,
+      };
+
+      // DOM References
+      const canvas = document.getElementById('oculusCanvas');
+      const ctx = canvas.getContext('2d');
+      const quickNodeBar = document.getElementById('quickNodeBar');
+      const resonanceReadout = document.getElementById('resonanceReadout');
+      const activeModeBadge = document.getElementById('activeModeBadge');
+
+      const flowSlider = document.getElementById('flowSlider');
+      const rainSlider = document.getElementById('rainSlider');
+      const resonanceSlider = document.getElementById('resonanceSlider');
+      const flowVal = document.getElementById('flowVal');
+      const rainVal = document.getElementById('rainVal');
+      const resonanceSliderVal = document.getElementById('resonanceSliderVal');
+      const resetParamsBtn = document.getElementById('resetParamsBtn');
+
+      const inspDirectionBadge = document.getElementById('inspDirectionBadge');
+      const inspElementTag = document.getElementById('inspElementTag');
+      const inspTitle = document.getElementById('inspTitle');
+      const inspDesc = document.getElementById('inspDesc');
+      const inspAffirmation = document.getElementById('inspAffirmation');
+
+      const pulseWaveBtn = document.getElementById('pulseWaveBtn');
+      const audioToggleBtn = document.getElementById('audioToggleBtn');
+      const audioOnIcon = document.getElementById('audioOnIcon');
+      const audioOffIcon = document.getElementById('audioOffIcon');
+      const audioLabel = document.getElementById('audioLabel');
+
+      // Optional Web Audio API Synthesizer (Gentle Rain Noise + Harmonic Water Chimes)
+      let audioCtx = null;
+      let rainGain = null;
+      let masterGain = null;
+
+      function initAudioIfNeeded() {
+        if (audioCtx) return null;
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+
+        audioCtx = new AudioContextClass();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.0001;
+        masterGain.connect(audioCtx.destination);
+
+        // Pink-ish noise buffer for soft rain / waterfall ambience
+        const bufferSize = audioCtx.sampleRate * 2;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+          b6 = white * 0.115926;
+        }
+
+        const whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.value = 1150;
+        bandpass.Q.value = 0.65;
+
+        rainGain = audioCtx.createGain();
+        rainGain.gain.value = 0.35;
+
+        whiteNoise.connect(bandpass);
+        bandpass.connect(rainGain);
+        rainGain.connect(masterGain);
+        whiteNoise.start(0);
+
+        return audioCtx;
+      }
+
+      function updateAudioLevels() {
+        if (!audioCtx || !masterGain || !rainGain) return;
+        const now = audioCtx.currentTime;
+        if (state.audioEnabled) {
+          audioCtx.resume();
+          const targetMaster = 0.18 + (state.flow / 100) * 0.16;
+          masterGain.gain.setTargetAtTime(targetMaster, now, 0.15);
+          rainGain.gain.setTargetAtTime(0.2 + (state.rain / 100) * 0.55, now, 0.15);
+        } else {
+          masterGain.gain.setTargetAtTime(0.0001, now, 0.12);
+        }
+      }
+
+      function playWaterChime(pitchFactor = 1) {
+        if (!state.audioEnabled || !audioCtx || !masterGain) return;
+        try {
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          // Pentatonic / ethereal water drop harmonic frequencies
+          const baseFreqs = [528, 594, 660, 792, 880, 1056];
+          const chosen = baseFreqs[Math.floor(Math.random() * baseFreqs.length)] * pitchFactor;
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(chosen * 0.96, now);
+          osc.frequency.exponentialRampToValueAtTime(chosen * 1.04, now + 0.35);
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.14, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+
+          osc.connect(gain);
+          gain.connect(masterGain);
+
+          osc.start(now);
+          osc.stop(now + 0.9);
+        } catch (e) {
+          // Ignore audio scheduling errors on restricted devices
+        }
+      }
+
+      // Canvas Visual Entities
+      const ripples = [];
+      const rainDrops = [];
+      const streamParticles = [];
+      let matrixRotation = 0;
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let centerX = 0;
+      let centerY = 0;
+      let poolRadius = 110;
+      let matrixRadius = 210;
+
+      // Computed screen positions of nodes for hit testing
+      const nodeScreenPositions = new Map();
+
+      function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        width = Math.max(280, rect.width);
+        height = Math.max(360, rect.height);
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        centerX = width * 0.5;
+        centerY = height * 0.52;
+
+        const minDim = Math.min(width, height);
+        matrixRadius = Math.max(115, minDim * 0.39);
+        poolRadius = Math.max(54, matrixRadius * 0.48);
+      }
+
+      function spawnRipple(x, y, maxRadius = 120, color = null) {
+        const modeCfg = MODE_CONFIG[state.mode];
+        ripples.push({
+          x,
+          y,
+          radius: 4,
+          maxRadius,
+          alpha: 0.72,
+          color: color || modeCfg.primaryColor,
+        });
+        if (ripples.length > 55) {
+          ripples.shift();
+        }
+      }
+
+      function spawnEnergyWave() {
+        const modeCfg = MODE_CONFIG[state.mode];
+        spawnRipple(centerX, centerY, matrixRadius * 1.15, '#fbbf24');
+        setTimeout(() => spawnRipple(centerX, centerY, matrixRadius * 0.95, modeCfg.primaryColor), 140);
+        setTimeout(() => spawnRipple(centerX, centerY, poolRadius * 1.4, modeCfg.secondaryColor), 280);
+        playWaterChime(1.12);
+      }
+
+      // Build Quick Node Selector Bar
+      function renderQuickNodeBar() {
+        quickNodeBar.innerHTML = '';
+        MATRIX_NODES.forEach((node) => {
+          const isSelected = state.selectedNodeId === node.id;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.dataset.nodeId = node.id;
+          btn.className = `shrink-0 rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+            isSelected
+              ? 'border-amber-300/70 bg-amber-400/20 text-amber-200 shadow-sm'
+              : 'border-slate-800 bg-slate-900/75 text-slate-300 hover:border-sky-400/40 hover:text-white'
+          }`;
+          btn.textContent = node.shortName;
+          btn.addEventListener('click', () => {
+            selectNode(node.id, true);
+          });
+          quickNodeBar.appendChild(btn);
+        });
+      }
+
+      function selectNode(nodeId, triggerRipple = false) {
+        const node = MATRIX_NODES.find((n) => n.id === nodeId);
+        if (!node) return;
+        state.selectedNodeId = node.id;
+
+        inspDirectionBadge.textContent = node.direction;
+        inspElementTag.textContent = node.element;
+        inspTitle.textContent = node.title;
+        inspDesc.textContent = node.desc;
+        inspAffirmation.textContent = node.affirmation;
+
+        renderQuickNodeBar();
+
+        if (triggerRipple) {
+          const pos = nodeScreenPositions.get(node.id) || { x: centerX, y: centerY };
+          spawnRipple(pos.x, pos.y, 95, node.accent);
+          playWaterChime(1);
+        }
+      }
+
+      function applyModeUI() {
+        const modeCfg = MODE_CONFIG[state.mode];
+        activeModeBadge.textContent = `意念模式：${modeCfg.label}`;
+
+        document.querySelectorAll('.mode-btn').forEach((btn) => {
+          const m = btn.dataset.mode;
+          if (m === state.mode) {
+            btn.className =
+              'mode-btn rounded-2xl border border-sky-300/60 bg-gradient-to-br from-sky-400/20 to-amber-400/15 px-3.5 py-3 text-left shadow-lg shadow-sky-500/10 transition';
+          } else {
+            btn.className =
+              'mode-btn rounded-2xl border border-slate-800 bg-slate-900/65 px-3.5 py-3 text-left transition hover:border-sky-400/40';
+          }
+        });
+      }
+
+      function syncSlidersUI() {
+        flowSlider.value = state.flow;
+        rainSlider.value = state.rain;
+        resonanceSlider.value = state.resonance;
+
+        flowVal.textContent = `${state.flow}%`;
+        rainVal.textContent = `${state.rain}%`;
+        resonanceSliderVal.textContent = `${state.resonance}%`;
+        resonanceReadout.textContent = `共振度 ${state.resonance}%`;
+      }
+
+      // Main Animation Loop
+      let lastTime = performance.now();
+      let ambientDropTimer = 0;
+
+      function update(dt) {
+        const modeCfg = MODE_CONFIG[state.mode];
+        const flowNorm = state.flow / 100;
+        const rainNorm = state.rain / 100;
+        const resNorm = state.resonance / 100;
+
+        // Rotate outer Feng Shui Bagua ring gently
+        matrixRotation += dt * (0.12 + resNorm * 0.25) * modeCfg.speedMult;
+
+        // Spawn overhead rain drops falling into the Rain Oculus pool
+        const desiredRainCount = Math.floor(14 + rainNorm * 68);
+        while (rainDrops.length < desiredRainCount) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Math.sqrt(Math.random()) * (poolRadius * 0.92);
+          rainDrops.push({
+            x: centerX + Math.cos(angle) * dist,
+            y: -20 - Math.random() * 140,
+            targetY: centerY + Math.sin(angle) * dist * 0.85,
+            speed: 320 + flowNorm * 280 + Math.random() * 140,
+            len: 10 + flowNorm * 16,
+          });
+        }
+
+        for (let i = rainDrops.length - 1; i >= 0; i--) {
+          const d = rainDrops[i];
+          d.y += d.speed * dt;
+          if (d.y >= d.targetY) {
+            if (Math.random() < 0.28 + rainNorm * 0.35) {
+              spawnRipple(d.x, d.targetY, 26 + flowNorm * 34, modeCfg.secondaryColor);
+            }
+            rainDrops.splice(i, 1);
+          }
+        }
+
+        // Spawn swirling waterfall funnel particles from overhead ring inward toward center
+        const desiredStreamCount = Math.floor(24 + flowNorm * 72);
+        while (streamParticles.length < desiredStreamCount) {
+          const angle = Math.random() * Math.PI * 2;
+          const startR = poolRadius * (1.28 + Math.random() * 0.25);
+          streamParticles.push({
+            angle,
+            r: startR,
+            angularSpeed: (1.2 + flowNorm * 2.1) * (0.8 + Math.random() * 0.4),
+            radialSpeed: (38 + flowNorm * 68) * (0.8 + Math.random() * 0.4),
+            size: 1.5 + Math.random() * 2,
+          });
+        }
+
+        for (let i = streamParticles.length - 1; i >= 0; i--) {
+          const p = streamParticles[i];
+          p.angle += p.angularSpeed * dt * modeCfg.speedMult;
+          p.r -= p.radialSpeed * dt * modeCfg.speedMult;
+          if (p.r < poolRadius * 0.14) {
+            p.r = poolRadius * (1.28 + Math.random() * 0.22);
+            p.angle = Math.random() * Math.PI * 2;
+          }
+        }
+
+        // Update expanding ripples
+        for (let i = ripples.length - 1; i >= 0; i--) {
+          const rp = ripples[i];
+          rp.radius += (42 + flowNorm * 45) * dt;
+          const progress = rp.radius / rp.maxRadius;
+          rp.alpha = Math.max(0, 0.65 * (1 - progress));
+          if (progress >= 1) {
+            ripples.splice(i, 1);
+          }
+        }
+
+        // Gentle rhythmic center pulse
+        ambientDropTimer += dt;
+        const pulseInterval = Math.max(0.85, 2.4 - flowNorm * 1.3);
+        if (ambientDropTimer >= pulseInterval) {
+          ambientDropTimer = 0;
+          spawnRipple(centerX, centerY, poolRadius * 1.25, '#fbbf24');
+        }
+      }
+
+      function render(now) {
+        const modeCfg = MODE_CONFIG[state.mode];
+        const resNorm = state.resonance / 100;
+        const flowNorm = state.flow / 100;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // 1. Deep Obsidian Radial Backdrop
+        const bgGrad = ctx.createRadialGradient(centerX, centerY, 12, centerX, centerY, Math.max(width, height) * 0.68);
+        bgGrad.addColorStop(0, 'rgba(20, 46, 74, 0.35)');
+        bgGrad.addColorStop(0.55, 'rgba(9, 15, 28, 0.72)');
+        bgGrad.addColorStop(1, 'rgba(6, 9, 17, 1)');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Outer Feng Shui Matrix Ring & Sacred Geometry Lines
+        ctx.save();
+        ctx.translate(centerX, centerY);
+
+        // Outer subtle aura ring
+        ctx.beginPath();
+        ctx.arc(0, 0, matrixRadius * 1.12, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(251, 191, 36, ${0.08 + resNorm * 0.14})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Rotating Bagua / Octagon / Grid Matrix Ring
+        ctx.save();
+        ctx.rotate(matrixRotation);
+
+        ctx.beginPath();
+        ctx.arc(0, 0, matrixRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${0.18 + resNorm * 0.25})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 8-fold radial energy spokes
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a) * (poolRadius * 1.08), Math.sin(a) * (poolRadius * 1.08));
+          ctx.lineTo(Math.cos(a) * matrixRadius, Math.sin(a) * matrixRadius);
+          ctx.strokeStyle = `rgba(148, 163, 184, ${0.08 + resNorm * 0.12})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        // Inner octagon frame
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4;
+          const r = matrixRadius * 0.58;
+          const px = Math.cos(a) * r;
+          const py = Math.sin(a) * r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = `rgba(45, 212, 191, ${0.12 + resNorm * 0.18})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.restore();
+        ctx.restore();
+
+        // 3. Central "Rain Oculus" (雨之眼) Basin & Concentric Water Rings
+        const poolGrad = ctx.createRadialGradient(centerX, centerY, 4, centerX, centerY, poolRadius * 1.25);
+        poolGrad.addColorStop(0, 'rgba(251, 191, 36, 0.22)');
+        poolGrad.addColorStop(0.45, 'rgba(45, 212, 191, 0.22)');
+        poolGrad.addColorStop(0.85, 'rgba(56, 189, 248, 0.14)');
+        poolGrad.addColorStop(1, 'rgba(6, 9, 17, 0)');
+        ctx.fillStyle = poolGrad;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, poolRadius * 1.25, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Overhead Rain Oculus Funnel Rim
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, poolRadius * 1.22, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, poolRadius * 0.65, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 4. Swirling Waterfall Funnel Particles
+        streamParticles.forEach((p) => {
+          const sx = centerX + Math.cos(p.angle) * p.r;
+          const sy = centerY + Math.sin(p.angle) * p.r;
+          ctx.beginPath();
+          ctx.arc(sx, sy, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(125, 211, 252, ${0.25 + flowNorm * 0.45})`;
+          ctx.fill();
+        });
+
+        // 5. Interactive & Ambient Ripples
+        ripples.forEach((rp) => {
+          ctx.beginPath();
+          ctx.arc(rp.x, rp.y, rp.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = rp.color;
+          ctx.globalAlpha = rp.alpha;
+          ctx.lineWidth = 1.6;
+          ctx.stroke();
+        });
+        ctx.globalAlpha = 1;
+
+        // 6. Falling Rain Streaks
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.35)';
+        ctx.lineWidth = 1.2;
+        rainDrops.forEach((d) => {
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x, d.y + d.len);
+          ctx.stroke();
+        });
+
+        // 7. Feng Shui Matrix Nodes (Center + 8 Directions)
+        const pulseScale = 1 + Math.sin(now * 0.003) * 0.06;
+
+        MATRIX_NODES.forEach((node) => {
+          let nx = centerX;
+          let ny = centerY;
+
+          if (node.angleDeg !== null) {
+            const rad = (node.angleDeg * Math.PI) / 180;
+            const r = matrixRadius * node.radiusFactor;
+            nx = centerX + Math.cos(rad) * r;
+            ny = centerY + Math.sin(rad) * r;
+          }
+
+          nodeScreenPositions.set(node.id, { x: nx, y: ny });
+
+          const isSelected = state.selectedNodeId === node.id;
+          const isHovered = state.hoveredNodeId === node.id;
+          const isModeFocus = modeCfg.focusNodeId === node.id;
+          const baseR = node.id === 'center' ? 22 : 15;
+          const drawR = baseR * (isSelected || isHovered ? 1.18 : isModeFocus ? pulseScale : 1);
+
+          // Glow halo
+          if (isSelected || isHovered || isModeFocus) {
+            const halo = ctx.createRadialGradient(nx, ny, 2, nx, ny, drawR * 2.1);
+            halo.addColorStop(0, node.accent + '66');
+            halo.addColorStop(1, 'rgba(6, 9, 17, 0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath();
+            ctx.arc(nx, ny, drawR * 2.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Node circle
+          ctx.beginPath();
+          ctx.arc(nx, ny, drawR, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected ? '#0f172a' : 'rgba(9, 14, 26, 0.9)';
+          ctx.fill();
+          ctx.lineWidth = isSelected ? 2.6 : 1.6;
+          ctx.strokeStyle = isSelected || isHovered ? '#ffffff' : node.accent;
+          ctx.stroke();
+
+          // Inner core dot
+          ctx.beginPath();
+          ctx.arc(nx, ny, node.id === 'center' ? 6 : 4, 0, Math.PI * 2);
+          ctx.fillStyle = node.accent;
+          ctx.fill();
+
+          // Node label
+          ctx.font = isSelected
+            ? '600 12px "Noto Sans SC", "Inter", sans-serif'
+            : '500 11px "Noto Sans SC", "Inter", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillStyle = isSelected || isHovered ? '#f8fafc' : 'rgba(226, 232, 240, 0.85)';
+          ctx.fillText(node.shortName, nx, ny + drawR + 6);
+        });
+      }
+
+      function loop(now) {
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+        update(dt);
+        render(now);
+        requestAnimationFrame(loop);
+      }
+
+      // Canvas Pointer Interaction: Node Selection or Water Drop Ripple
+      function getCanvasPoint(evt) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top,
+        };
+      }
+
+      function findNodeAt(x, y) {
+        for (const node of MATRIX_NODES) {
+          const pos = nodeScreenPositions.get(node.id);
+          if (!pos) continue;
+          const dist = Math.hypot(x - pos.x, y - pos.y);
+          const hitRadius = node.id === 'center' ? 30 : 24;
+          if (dist <= hitRadius) {
+            return node;
+          }
+        }
+        return null;
+      }
+
+      canvas.addEventListener('pointermove', (evt) => {
+        const pt = getCanvasPoint(evt);
+        const hit = findNodeAt(pt.x, pt.y);
+        state.hoveredNodeId = hit ? hit.id : null;
+        canvas.style.cursor = hit ? 'pointer' : 'crosshair';
+      });
+
+      canvas.addEventListener('pointerdown', (evt) => {
+        const pt = getCanvasPoint(evt);
+        const hit = findNodeAt(pt.x, pt.y);
+        if (hit) {
+          selectNode(hit.id, true);
+        } else {
+          spawnRipple(pt.x, pt.y, 105);
+          playWaterChime(0.95 + Math.random() * 0.25);
+        }
+      });
+
+      // UI Event Listeners
+      document.querySelectorAll('.mode-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.mode = btn.dataset.mode;
+          applyModeUI();
+          const modeCfg = MODE_CONFIG[state.mode];
+          selectNode(modeCfg.focusNodeId, false);
+          spawnEnergyWave();
+        });
+      });
+
+      flowSlider.addEventListener('input', (e) => {
+        state.flow = Number(e.target.value);
+        syncSlidersUI();
+        updateAudioLevels();
+      });
+
+      rainSlider.addEventListener('input', (e) => {
+        state.rain = Number(e.target.value);
+        syncSlidersUI();
+        updateAudioLevels();
+      });
+
+      resonanceSlider.addEventListener('input', (e) => {
+        state.resonance = Number(e.target.value);
+        syncSlidersUI();
+      });
+
+      resetParamsBtn.addEventListener('click', () => {
+        state.flow = 75;
+        state.rain = 65;
+        state.resonance = 84;
+        state.mode = 'career';
+        applyModeUI();
+        syncSlidersUI();
+        updateAudioLevels();
+        selectNode('center', true);
+      });
+
+      pulseWaveBtn.addEventListener('click', () => {
+        spawnEnergyWave();
+      });
+
+      audioToggleBtn.addEventListener('click', () => {
+        initAudioIfNeeded();
+        state.audioEnabled = !state.audioEnabled;
+        audioToggleBtn.setAttribute('aria-pressed', String(state.audioEnabled));
+        audioOnIcon.classList.toggle('hidden', !state.audioEnabled);
+        audioOffIcon.classList.toggle('hidden', state.audioEnabled);
+        audioLabel.textContent = state.audioEnabled ? '水声已开启' : '水声静音';
+        updateAudioLevels();
+        if (state.audioEnabled) {
+          playWaterChime(1.05);
+        }
+      });
+
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      renderQuickNodeBar();
+      selectNode('center', false);
+      applyModeUI();
+      syncSlidersUI();
+      spawnEnergyWave();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
